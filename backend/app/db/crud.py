@@ -5,7 +5,7 @@ from uuid import uuid4
 from sqlalchemy import select, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Customer, Vehicle, Booking, Admin, Payment, VehicleAvailability, BookingStatus, VehicleType
+from app.db.models import Customer, Vehicle, Booking, Admin, Payment, VehicleAvailability, BookingStatus, VehicleType, TripType
 from app.core.security import get_password_hash, verify_password
 
 
@@ -30,24 +30,30 @@ async def create_customer(
     first_name: str,
     last_name: str,
     email: str,
-    password: str,
     phone: str,
+    password: str | None = None,
     is_corporate: bool = False
 ) -> Customer:
-    """Create a new customer"""
+    """Create a new customer (password optional for phone-based auth)"""
     customer = Customer(
         id=str(uuid4()),
         first_name=first_name,
         last_name=last_name,
         email=email,
         phone=phone,
-        password_hash=get_password_hash(password),
+        password_hash=get_password_hash(password) if password else None,
         is_corporate=is_corporate,
     )
     db.add(customer)
     await db.commit()
     await db.refresh(customer)
     return customer
+
+
+async def get_customer_by_phone(db: AsyncSession, phone: str) -> Optional[Customer]:
+    """Get customer by phone number"""
+    result = await db.execute(select(Customer).where(Customer.phone == phone))
+    return result.scalar_one_or_none()
 
 
 async def authenticate_customer(db: AsyncSession, email: str, password: str) -> Optional[Customer]:
@@ -111,7 +117,7 @@ async def get_vehicles(
     query = select(Vehicle)
 
     if available_only:
-        query = query.where(Vehicle.is_available == True)
+        query = query.where(Vehicle.isAvailable == True)
 
     if vehicle_type:
         query = query.where(Vehicle.type == vehicle_type)
@@ -130,7 +136,7 @@ async def get_vehicle_by_id(db: AsyncSession, vehicle_id: str) -> Optional[Vehic
 async def get_vehicle_by_registration(db: AsyncSession, registration_number: str) -> Optional[Vehicle]:
     """Get vehicle by registration number"""
     result = await db.execute(
-        select(Vehicle).where(Vehicle.registration_number == registration_number)
+        select(Vehicle).where(Vehicle.registrationNumber == registration_number)
     )
     return result.scalar_one_or_none()
 
@@ -156,17 +162,17 @@ async def create_vehicle(
     """Create a new vehicle"""
     vehicle = Vehicle(
         id=str(uuid4()),
-        registration_number=registration_number,
+        registrationNumber=registration_number,
         name=name,
         type=vehicle_type,
-        seating_capacity=seating_capacity,
-        price_per_km=price_per_km,
-        minimum_charge=minimum_charge,
-        driver_allowance_per_day=driver_allowance_per_day,
+        seatingCapacity=seating_capacity,
+        pricePerKm=price_per_km,
+        minimumCharge=minimum_charge,
+        driverAllowancePerDay=driver_allowance_per_day,
         make=make,
         model=model,
         year=year,
-        fuel_type=fuel_type,
+        fuelType=fuel_type,
         color=color,
         amenities=amenities or [],
         images=images or [],
@@ -186,7 +192,7 @@ async def update_vehicle_availability(
     """Update vehicle availability status"""
     vehicle = await get_vehicle_by_id(db, vehicle_id)
     if vehicle:
-        vehicle.is_available = is_available
+        vehicle.isAvailable = is_available
         await db.commit()
         await db.refresh(vehicle)
     return vehicle
@@ -208,13 +214,13 @@ async def get_available_vehicles(
     min_capacity: Optional[int] = None
 ) -> List[Vehicle]:
     """Get available vehicles with filters"""
-    query = select(Vehicle).where(Vehicle.is_available == True)
+    query = select(Vehicle).where(Vehicle.isAvailable == True)
 
     if vehicle_type:
         query = query.where(Vehicle.type == vehicle_type)
 
     if min_capacity:
-        query = query.where(Vehicle.seating_capacity >= min_capacity)
+        query = query.where(Vehicle.seatingCapacity >= min_capacity)
 
     result = await db.execute(query)
     return list(result.scalars().all())
@@ -236,15 +242,15 @@ async def get_bookings(
     query = select(Booking)
 
     if customer_id:
-        query = query.where(Booking.customer_id == customer_id)
+        query = query.where(Booking.customerId == customer_id)
 
     if status:
         query = query.where(Booking.status == status)
 
     if vehicle_id:
-        query = query.where(Booking.vehicle_id == vehicle_id)
+        query = query.where(Booking.vehicleId == vehicle_id)
 
-    query = query.order_by(Booking.created_at.desc()).offset(skip).limit(limit)
+    query = query.order_by(Booking.createdAt.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
     return list(result.scalars().all())
 
@@ -258,7 +264,7 @@ async def get_booking_by_id(db: AsyncSession, booking_id: str) -> Optional[Booki
 async def get_booking_by_number(db: AsyncSession, booking_number: str) -> Optional[Booking]:
     """Get booking by booking number"""
     result = await db.execute(
-        select(Booking).where(Booking.booking_number == booking_number)
+        select(Booking).where(Booking.bookingNumber == booking_number)
     )
     return result.scalar_one_or_none()
 
@@ -303,6 +309,10 @@ async def create_booking(
     """Create a new booking"""
     from datetime import datetime
 
+    # Convert string trip_type to TripType enum (handle both "one_way" and "ONE_WAY" formats)
+    trip_type_upper = trip_type.upper().replace('-', '_')
+    trip_type_enum = TripType(trip_type_upper)
+
     # Generate booking number
     booking_number = f"BK{datetime.utcnow().strftime('%Y%m%d%H%M%S')}{str(uuid4())[:6].upper()}"
 
@@ -310,42 +320,42 @@ async def create_booking(
 
     booking = Booking(
         id=str(uuid4()),
-        booking_number=booking_number,
-        customer_id=customer_id,
-        vehicle_id=vehicle_id,
-        trip_type=trip_type,
-        start_date=start_date,
-        end_date=end_date,
-        pickup_location=pickup_location,
-        pickup_landmark=pickup_landmark,
-        pickup_lat=pickup_lat,
-        pickup_lng=pickup_lng,
-        pickup_time=pickup_time,
-        drop_location=drop_location,
-        drop_landmark=drop_landmark,
-        drop_lat=drop_lat,
-        drop_lng=drop_lng,
-        return_pickup_location=return_pickup_location,
-        return_drop_location=return_drop_location,
-        return_pickup_time=return_pickup_time,
-        multi_city_stops=multi_city_stops,
-        estimated_distance_km=estimated_distance_km,
-        estimated_duration_hours=estimated_duration_hours,
-        passenger_count=passenger_count,
-        base_fare=base_fare,
-        distance_charge=distance_charge,
-        driver_allowance=driver_allowance,
-        toll_charges=toll_charges,
-        parking_charges=parking_charges,
-        night_halt_charges=night_halt_charges,
-        service_tax=service_tax,
+        bookingNumber=booking_number,
+        customerId=customer_id,
+        vehicleId=vehicle_id,
+        tripType=trip_type_enum,
+        startDate=start_date,
+        endDate=end_date,
+        pickupLocation=pickup_location,
+        pickupLandmark=pickup_landmark,
+        pickupLat=pickup_lat,
+        pickupLng=pickup_lng,
+        pickupTime=pickup_time,
+        dropLocation=drop_location,
+        dropLandmark=drop_landmark,
+        dropLat=drop_lat,
+        dropLng=drop_lng,
+        returnPickupLocation=return_pickup_location,
+        returnDropLocation=return_drop_location,
+        returnPickupTime=return_pickup_time,
+        multiCityStops=multi_city_stops,
+        estimatedDistanceKm=estimated_distance_km,
+        estimatedDurationHours=estimated_duration_hours,
+        passengerCount=passenger_count,
+        baseFare=base_fare,
+        distanceCharge=distance_charge,
+        driverAllowance=driver_allowance,
+        tollCharges=toll_charges,
+        parkingCharges=parking_charges,
+        nightHaltCharges=night_halt_charges,
+        serviceTax=service_tax,
         discount=discount,
-        total_amount=total_amount,
-        advance_paid=advance_paid,
-        balance_amount=balance_amount,
-        payment_due_amount=balance_amount,
+        totalAmount=total_amount,
+        advancePaid=advance_paid,
+        balanceAmount=balance_amount,
+        paymentDueAmount=balance_amount,
         status=BookingStatus.PENDING,
-        special_requests=special_requests,
+        specialRequests=special_requests,
         notes=notes,
     )
     db.add(booking)
@@ -400,8 +410,8 @@ async def get_customer_bookings(db: AsyncSession, customer_id: str) -> List[Book
     """Get all bookings for a customer"""
     result = await db.execute(
         select(Booking)
-        .where(Booking.customer_id == customer_id)
-        .order_by(Booking.created_at.desc())
+        .where(Booking.customerId == customer_id)
+        .order_by(Booking.createdAt.desc())
     )
     return list(result.scalars().all())
 
@@ -419,7 +429,7 @@ async def check_vehicle_availability(
     """Check if vehicle is available for the given date range"""
     # Check if vehicle exists and is available
     vehicle = await get_vehicle_by_id(db, vehicle_id)
-    if not vehicle or not vehicle.is_available:
+    if not vehicle or not vehicle.isAvailable:
         return False
 
     # Check for existing bookings in the date range
@@ -427,13 +437,13 @@ async def check_vehicle_availability(
     result = await db.execute(
         select(Booking).where(
             and_(
-                Booking.vehicle_id == vehicle_id,
+                Booking.vehicleId == vehicle_id,
                 Booking.status.in_([BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS]),
                 # Overlapping date check
                 or_(
-                    and_(Booking.start_date <= start_date, Booking.end_date >= start_date),
-                    and_(Booking.start_date <= end_date, Booking.end_date >= end_date),
-                    and_(Booking.start_date >= start_date, Booking.end_date <= end_date),
+                    and_(Booking.startDate <= start_date, Booking.endDate >= start_date),
+                    and_(Booking.startDate <= end_date, Booking.endDate >= end_date),
+                    and_(Booking.startDate >= start_date, Booking.endDate <= end_date),
                 )
             )
         )

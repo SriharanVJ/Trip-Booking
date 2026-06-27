@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Search, Calendar, Users, MapPin, ChevronDown, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
 import { useRouter } from 'next/navigation'
 
 // Tamil Nadu cities list
@@ -50,11 +51,27 @@ const tamilNaduCities = [
 
 export function BusSearch() {
   const router = useRouter()
+
+  // Get today's date in YYYY-MM-DD format (use local time to avoid timezone issues)
+  const getTodayDate = () => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  // Set default values
+  const defaultOrigin = 'Tirupur'
+  const defaultDestination = 'Chennai'
+  const defaultDate = getTodayDate()
+  const defaultPassengers = 1
+
   const [searchParams, setSearchParams] = useState({
-    origin: '',
-    destination: '',
-    date: '',
-    passengers: 1,
+    origin: defaultOrigin,
+    destination: defaultDestination,
+    date: defaultDate,
+    passengers: defaultPassengers,
   })
 
   const handleSearch = (e: React.FormEvent) => {
@@ -87,7 +104,7 @@ export function BusSearch() {
           <label className="block text-sm font-medium text-gold/90 mb-3 tracking-wide">
             From
           </label>
-          <div className="relative">
+          <div className="relative h-14">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <MapPin className="h-5 w-5 text-gold/70 group-focus-within:text-gold transition-colors duration-300" />
             </div>
@@ -97,7 +114,7 @@ export function BusSearch() {
                 setSearchParams({ ...searchParams, origin: e.target.value })
               }
               className={`
-                w-full h-14 rounded-xl border-2 bg-black/50 backdrop-blur-sm
+                w-full h-full rounded-xl border-2 bg-black/50 backdrop-blur-sm
                 px-4 py-3 pl-12 pr-10 text-sm text-warm-white
                 appearance-none cursor-pointer transition-all duration-300
                 border-gold/20 hover:border-gold/40 focus:border-gold/60
@@ -130,7 +147,7 @@ export function BusSearch() {
           <label className="block text-sm font-medium text-gold/90 mb-3 tracking-wide">
             To
           </label>
-          <div className="relative">
+          <div className="relative h-14">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <MapPin className="h-5 w-5 text-gold/70 group-focus-within:text-gold transition-colors duration-300" />
             </div>
@@ -140,7 +157,7 @@ export function BusSearch() {
                 setSearchParams({ ...searchParams, destination: e.target.value })
               }
               className={`
-                w-full h-14 rounded-xl border-2 bg-black/50 backdrop-blur-sm
+                w-full h-full rounded-xl border-2 bg-black/50 backdrop-blur-sm
                 px-4 py-3 pl-12 pr-10 text-sm text-warm-white
                 appearance-none cursor-pointer transition-all duration-300
                 border-gold/20 hover:border-gold/40 focus:border-gold/60
@@ -173,28 +190,24 @@ export function BusSearch() {
           <label className="block text-sm font-medium text-gold/90 mb-3 tracking-wide">
             Travel Date
           </label>
-          <div className="relative">
+          <div className="relative h-14">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
               <Calendar className="h-5 w-5 text-gold/70 group-focus-within:text-gold transition-colors duration-300" />
             </div>
-            <input
-              type="date"
+            <DatePicker
               value={searchParams.date}
-              onChange={(e) =>
-                setSearchParams({ ...searchParams, date: e.target.value })
-              }
+              onChange={(date) => setSearchParams({ ...searchParams, date })}
+              minDate={new Date()}
+              placeholder="Select travel date"
+              required
               className={`
-                w-full h-14 rounded-xl border-2 bg-black/50 backdrop-blur-sm
+                w-full h-full rounded-xl border-2 bg-black/50 backdrop-blur-sm
                 px-4 py-3 pl-12 text-sm text-warm-white
                 cursor-pointer transition-all duration-300
                 border-gold/20 hover:border-gold/40 focus:border-gold/60
                 focus:ring-2 focus:ring-gold/20 focus:bg-black/70
                 outline-none
-                [color-scheme:dark]
               `}
-              style={{ userSelect: 'none' }}
-              min={new Date().toISOString().split('T')[0]}
-              required
             />
           </div>
         </div>
@@ -204,7 +217,7 @@ export function BusSearch() {
           <label className="block text-sm font-medium text-gold/90 mb-3 tracking-wide">
             Guests
           </label>
-          <div className="relative">
+          <div className="relative h-14">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Users className="h-5 w-5 text-gold/70 group-focus-within:text-gold transition-colors duration-300" />
             </div>
@@ -220,7 +233,7 @@ export function BusSearch() {
                 })
               }
               className={`
-                w-full h-14 rounded-xl border-2 bg-black/50 backdrop-blur-sm
+                w-full h-full rounded-xl border-2 bg-black/50 backdrop-blur-sm
                 px-4 py-3 pl-12 text-sm text-warm-white
                 transition-all duration-300
                 border-gold/20 hover:border-gold/40 focus:border-gold/60

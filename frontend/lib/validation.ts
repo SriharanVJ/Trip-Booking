@@ -85,18 +85,8 @@ export const tripDetailsSchema: ValidationSchema = {
   dropLocation: { required: true },
   pickupDate: { required: true },
   pickupTime: { required: true },
-  returnDate: { custom: (value: string, data: any) => {
-    if (data.tripType === 'round-trip' && !value) {
-      return 'Return date is required for round-trip'
-    }
-    return true
-  }},
-  returnTime: { custom: (value: string, data: any) => {
-    if (data.tripType === 'round-trip' && !value) {
-      return 'Return time is required for round-trip'
-    }
-    return true
-  }},
+  returnDate: { required: false },
+  returnTime: { required: false },
   passengerCount: { required: true, custom: (value: number) => {
     if (value < 1) return 'At least 1 passenger is required'
     if (value > 50) return 'Maximum 50 passengers allowed'
@@ -124,16 +114,6 @@ export const customerDetailsSchema: ValidationSchema = {
 // Payment validation schema
 export const paymentSchema: ValidationSchema = {
   method: { required: true },
-  cardDetails: { custom: (value: any, data: any) => {
-    if (data.method === 'card' && !value) {
-      return 'Card details are required'
-    }
-    return true
-  }},
-  upiId: { custom: (value: string, data: any) => {
-    if (data.method === 'upi' && !value) {
-      return 'UPI ID is required'
-    }
-    return true
-  }}
+  cardDetails: { required: false },
+  upiId: { required: false }
 }

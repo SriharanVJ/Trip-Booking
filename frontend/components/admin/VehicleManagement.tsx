@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,128 +31,7 @@ import {
   Upload
 } from 'lucide-react'
 import { Vehicle, VehicleType } from '@/types'
-
-// Mock data
-const mockVehicles: Vehicle[] = [
-  {
-    id: '1',
-    name: 'Volvo 9400XL',
-    type: 'bus',
-    make: 'Volvo',
-    model: '9400XL',
-    year: 2022,
-    seatingCapacity: 45,
-    amenities: ['ac', 'wifi', 'charging-point', 'tv', 'water-bottle'],
-    imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=400',
-    images: [],
-    rating: 4.5,
-    reviewCount: 128,
-    basePrice: 2500,
-    priceUnit: 'per-day',
-    minCharge: 5000,
-    driverCharges: 1500,
-    features: ['Pushback seats', 'Reading lights', 'USB charging'],
-    description: 'Luxury multi-axle Volvo coach with premium amenities',
-    specifications: {
-      engine: 'D13C',
-      fuelType: 'diesel',
-      transmission: 'automatic',
-      mileage: '4 kmpl',
-      length: '12m',
-      width: '2.6m',
-      height: '3.8m',
-      luggageCapacity: '150 cubic feet',
-    },
-    available: true,
-  },
-  {
-    id: '2',
-    name: 'Scania Metrolink',
-    type: 'bus',
-    make: 'Scania',
-    model: 'Metrolink',
-    year: 2023,
-    seatingCapacity: 36,
-    amenities: ['ac', 'wifi', 'charging-point', 'toilet', 'blanket'],
-    imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400',
-    images: [],
-    rating: 4.8,
-    reviewCount: 92,
-    basePrice: 2800,
-    priceUnit: 'per-day',
-    minCharge: 6000,
-    driverCharges: 1500,
-    features: ['Recliner seats', 'Personal TV', 'Ambient lighting'],
-    description: 'Premium business class coach with executive features',
-    specifications: {
-      engine: 'DC13',
-      fuelType: 'diesel',
-      transmission: 'automatic',
-      mileage: '5 kmpl',
-      length: '11m',
-      width: '2.5m',
-      height: '3.6m',
-      luggageCapacity: '120 cubic feet',
-    },
-    available: true,
-  },
-  {
-    id: '3',
-    name: 'Toyota Coaster',
-    type: 'coach',
-    make: 'Toyota',
-    model: 'Coaster',
-    year: 2021,
-    seatingCapacity: 22,
-    amenities: ['ac', 'music-system'],
-    imageUrl: 'https://images.unsplash.com/photo-1557223562-6c77ef16210f?w=400',
-    images: [],
-    rating: 4.2,
-    reviewCount: 45,
-    basePrice: 1800,
-    priceUnit: 'per-day',
-    minCharge: 3000,
-    driverCharges: 1000,
-    features: ['Comfortable seating', 'Good suspension'],
-    description: 'Reliable mini-coach for small groups',
-    specifications: {
-      engine: '4.5L Turbo',
-      fuelType: 'diesel',
-      transmission: 'manual',
-      mileage: '8 kmpl',
-      luggageCapacity: '60 cubic feet',
-    },
-    available: false,
-  },
-  {
-    id: '4',
-    name: 'Force Traveller',
-    type: 'traveller',
-    make: 'Force',
-    model: 'Traveller 3350',
-    year: 2022,
-    seatingCapacity: 12,
-    amenities: ['ac'],
-    imageUrl: 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400',
-    images: [],
-    rating: 4.0,
-    reviewCount: 32,
-    basePrice: 1200,
-    priceUnit: 'per-day',
-    minCharge: 2000,
-    driverCharges: 800,
-    features: ['Spacious', 'Good AC'],
-    description: 'Perfect van for small group tours',
-    specifications: {
-      engine: '2.6L',
-      fuelType: 'diesel',
-      transmission: 'manual',
-      mileage: '10 kmpl',
-      luggageCapacity: '30 cubic feet',
-    },
-    available: true,
-  },
-]
+import { vehicleApi } from '@/lib/api'
 
 const vehicleTypes: { value: VehicleType; label: string }[] = [
   { value: 'car', label: 'Car' },
@@ -161,17 +40,12 @@ const vehicleTypes: { value: VehicleType; label: string }[] = [
   { value: 'bus', label: 'Bus' },
 ]
 
-const maintenanceSchedules = [
-  { vehicleId: '1', nextService: '2024-02-15', status: 'due' },
-  { vehicleId: '2', nextService: '2024-03-20', status: 'upcoming' },
-  { vehicleId: '3', nextService: '2024-01-28', status: 'overdue' },
-  { vehicleId: '4', nextService: '2024-02-28', status: 'upcoming' },
-]
-
 type ViewMode = 'list' | 'details'
 
 export function VehicleManagement() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles)
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
@@ -179,6 +53,49 @@ export function VehicleManagement() {
   const [selectedVehicles, setSelectedVehicles] = useState<Set<string>>(new Set())
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  // Load vehicles from API
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        setLoading(true)
+        const response = await vehicleApi.getVehicles()
+
+        // Transform API response to match Vehicle type
+        const vehiclesData = response.data.map((v: any) => ({
+          id: v.id,
+          name: v.name,
+          type: v.type,
+          make: v.make,
+          model: v.model,
+          year: v.year,
+          seatingCapacity: v.seatingCapacity,
+          amenities: v.amenities || [],
+          imageUrl: v.thumbnailImage || v.images?.[0] || '/images/placeholder-vehicle.jpg',
+          images: v.images || [],
+          rating: v.rating || 4.5,
+          reviewCount: v.reviewCount || 0,
+          basePrice: v.pricePerKm,
+          priceUnit: 'per-km',
+          minCharge: v.minimumCharge,
+          driverCharges: v.driverAllowancePerDay,
+          features: v.features ? JSON.parse(v.features || '{}').features || [] : [],
+          description: v.description || '',
+          specifications: v.specifications || {},
+          available: v.isAvailable !== false,
+        }))
+
+        setVehicles(vehiclesData)
+      } catch (err) {
+        console.error('Failed to load vehicles:', err)
+        setError('Failed to load vehicles. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadVehicles()
+  }, [])
 
   // Filter vehicles
   const filteredVehicles = vehicles.filter((vehicle) => {
@@ -214,27 +131,56 @@ export function VehicleManagement() {
     setSelectedVehicles(newSelection)
   }
 
-  const handleBulkAction = (action: 'activate' | 'deactivate' | 'delete') => {
-    if (action === 'delete') {
-      setVehicles(vehicles.filter((v) => !selectedVehicles.has(v.id)))
-    } else {
-      setVehicles(
-        vehicles.map((v) =>
-          selectedVehicles.has(v.id)
-            ? { ...v, available: action === 'activate' }
-            : v
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
+    try {
+      // For each selected vehicle, perform the action
+      for (const vehicleId of selectedVehicles) {
+        if (action === 'delete') {
+          // Delete operation would go here - for now just remove from local state
+          console.log('Delete vehicle:', vehicleId)
+        } else {
+          // Update vehicle availability
+          console.log('Update vehicle availability:', vehicleId, action === 'activate')
+        }
+      }
+
+      // Update local state
+      if (action === 'delete') {
+        setVehicles(vehicles.filter((v) => !selectedVehicles.has(v.id)))
+      } else {
+        setVehicles(
+          vehicles.map((v) =>
+            selectedVehicles.has(v.id)
+              ? { ...v, available: action === 'activate' }
+              : v
+          )
         )
-      )
+      }
+      setSelectedVehicles(new Set())
+    } catch (err) {
+      console.error('Failed to perform bulk action:', err)
+      alert('Failed to perform action. Please try again.')
     }
-    setSelectedVehicles(new Set())
   }
 
-  const handleToggleStatus = (vehicleId: string) => {
-    setVehicles(
-      vehicles.map((v) =>
-        v.id === vehicleId ? { ...v, available: !v.available } : v
+  const handleToggleStatus = async (vehicleId: string) => {
+    try {
+      const vehicle = vehicles.find(v => v.id === vehicleId)
+      if (!vehicle) return
+
+      // Update API - placeholder for now
+      console.log('Toggle vehicle availability:', vehicleId, !vehicle.available)
+
+      // Update local state
+      setVehicles(
+        vehicles.map((v) =>
+          v.id === vehicleId ? { ...v, available: !v.available } : v
+        )
       )
-    )
+    } catch (err) {
+      console.error('Failed to toggle vehicle status:', err)
+      alert('Failed to update vehicle status. Please try again.')
+    }
   }
 
   const getVehicleTypeColor = (type: VehicleType) => {
@@ -352,25 +298,53 @@ export function VehicleManagement() {
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="h-[600px]">
-            <div className="divide-y divide-gray-100">
-              {/* Header */}
-              <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <div className="col-span-1">
-                  <Checkbox
-                    checked={selectedVehicles.size === filteredVehicles.length}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </div>
-                <div className="col-span-4">Vehicle</div>
-                <div className="col-span-2">Type</div>
-                <div className="col-span-2">Capacity</div>
-                <div className="col-span-2">Status</div>
-                <div className="col-span-1"></div>
+          {loading ? (
+            <div className="flex items-center justify-center h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
+                <p className="text-sm text-gray-500">Loading vehicles...</p>
               </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-[400px]">
+              <div className="text-center text-red-600">
+                <p>{error}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          ) : filteredVehicles.length === 0 ? (
+            <div className="flex items-center justify-center h-[400px]">
+              <div className="text-center text-gray-500">
+                <p>No vehicles found</p>
+              </div>
+            </div>
+          ) : (
+            <ScrollArea className="h-[600px]">
+              <div className="divide-y divide-gray-100">
+                {/* Header */}
+                <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div className="col-span-1">
+                    <Checkbox
+                      checked={selectedVehicles.size === filteredVehicles.length}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </div>
+                  <div className="col-span-4">Vehicle</div>
+                  <div className="col-span-2">Type</div>
+                  <div className="col-span-2">Capacity</div>
+                  <div className="col-span-2">Status</div>
+                  <div className="col-span-1"></div>
+                </div>
 
-              {/* Rows */}
-              {filteredVehicles.map((vehicle) => (
+                {/* Rows */}
+                {filteredVehicles.map((vehicle) => (
                 <div
                   key={vehicle.id}
                   className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 items-center"
@@ -447,6 +421,7 @@ export function VehicleManagement() {
               ))}
             </div>
           </ScrollArea>
+          )}
         </CardContent>
       </Card>
 
@@ -528,32 +503,7 @@ export function VehicleManagement() {
 
               <div>
                 <p className="text-sm font-medium text-gray-900 mb-2">Maintenance Schedule</p>
-                {(() => {
-                  const schedule = maintenanceSchedules.find(
-                    (s) => s.vehicleId === selectedVehicle.id
-                  )
-                  return schedule ? (
-                    <div className="flex items-center gap-2">
-                      <Wrench className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm">
-                        Next service: <span className="font-medium">{schedule.nextService}</span>
-                      </span>
-                      <Badge
-                        variant={
-                          schedule.status === 'overdue'
-                            ? 'destructive'
-                            : schedule.status === 'due'
-                            ? 'default'
-                            : 'secondary'
-                        }
-                      >
-                        {schedule.status}
-                      </Badge>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No maintenance schedule</p>
-                  )
-                })()}
+                <p className="text-sm text-gray-500">No maintenance schedule</p>
               </div>
 
               <div className="flex gap-3 pt-4">

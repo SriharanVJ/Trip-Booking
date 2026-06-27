@@ -73,51 +73,52 @@ class Vehicle(Base):
     """Vehicle fleet with various seating capacities and amenities"""
     __tablename__ = "vehicles"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
-    registration_number = Column(String, unique=True, nullable=False)
-    name = Column(String, nullable=False)
-    type = Column(Enum(VehicleType), nullable=False)
-    seating_capacity = Column(Integer, nullable=False)
-    is_available = Column(Boolean, default=True, nullable=False)
+    id = Column("id", String, primary_key=True, default=generate_uuid)
+    registrationNumber = Column("registrationNumber", String, unique=True, nullable=False)
+    name = Column("name", String, nullable=False)
+    type = Column("type", Enum(VehicleType, name="VehicleType", create_constraint=False, inherit_schema=True), nullable=False)
+    seatingCapacity = Column("seatingCapacity", Integer, nullable=False)
+    isAvailable = Column("isAvailable", Boolean, default=True, nullable=False)
 
     # Pricing structure (in INR)
-    price_per_km = Column(Numeric(10, 2), nullable=False)
-    minimum_charge = Column(Numeric(10, 2), nullable=False)
-    driver_allowance_per_day = Column(Numeric(10, 2), nullable=False)
-    minimum_days = Column(Integer, default=1, nullable=False)
+    pricePerKm = Column("pricePerKm", Numeric(10, 2), nullable=False)
+    pricePerDay = Column("pricePerDay", Numeric(10, 2), nullable=False)
+    minimumCharge = Column("minimumCharge", Numeric(10, 2), nullable=False)
+    driverAllowancePerDay = Column("driverAllowancePerDay", Numeric(10, 2), nullable=False)
+    minimumDays = Column("minimumDays", Integer, default=1, nullable=False)
 
     # Vehicle details
-    make = Column(String)
-    model = Column(String)
-    year = Column(Integer)
-    fuel_type = Column(String)  # PETROL, DIESEL, CNG, ELECTRIC
-    color = Column(String)
+    make = Column("make", String)
+    model = Column("model", String)
+    year = Column("year", Integer)
+    fuelType = Column("fuelType", String)  # PETROL, DIESEL, CNG, ELECTRIC
+    color = Column("color", String)
 
     # Amenities available (stored as JSON array)
-    amenities = Column(JSON, default=list, nullable=False)
+    amenities = Column("amenities", JSON, default=list, nullable=False)
 
     # Images (stored as JSON array)
-    images = Column(JSON, default=list, nullable=False)
-    thumbnail_image = Column(String)
+    images = Column("images", JSON, default=list, nullable=False)
+    thumbnailImage = Column("thumbnailImage", String)
 
     # Additional details
-    description = Column(Text)
-    features = Column(Text)  # JSON for additional features
+    description = Column("description", Text)
+    features = Column("features", JSON)  # JSON for additional features
 
     # Maintenance
-    last_service_date = Column(DateTime)
-    next_service_due = Column(DateTime)
-    insurance_expiry = Column(DateTime)
-    pollution_cert_expiry = Column(DateTime)
-    fitness_cert_expiry = Column(DateTime)
+    lastServiceDate = Column("lastServiceDate", DateTime)
+    nextServiceDue = Column("nextServiceDue", DateTime)
+    insuranceExpiry = Column("insuranceExpiry", DateTime)
+    pollutionCertExpiry = Column("pollutionCertExpiry", DateTime)
+    fitnessCertExpiry = Column("fitnessCertExpiry", DateTime)
 
     # Rating and reviews
-    rating = Column(Numeric(3, 2), default=0, nullable=False)
-    review_count = Column(Integer, default=0, nullable=False)
+    rating = Column("rating", Numeric(3, 2), default=0, nullable=False)
+    reviewCount = Column("reviewCount", Integer, default=0, nullable=False)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    createdAt = Column("createdAt", DateTime, default=datetime.utcnow, nullable=False)
+    updatedAt = Column("updatedAt", DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relations
     bookings = relationship("Booking", back_populates="vehicle", cascade="all, delete-orphan")
@@ -129,42 +130,42 @@ class Customer(Base):
     """Customer details for bookings"""
     __tablename__ = "customers"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
+    id = Column("id", String, primary_key=True, default=generate_uuid)
 
-    # Personal information
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False, index=True)
-    phone = Column(String, nullable=False)
-    alternate_phone = Column(String)
+    # Personal information (database columns are camelCase)
+    first_name = Column("firstName", String, nullable=False)
+    last_name = Column("lastName", String, nullable=False)
+    email = Column("email", String, unique=True, nullable=False, index=True)
+    phone = Column("phone", String, nullable=False)
+    alternate_phone = Column("alternatePhone", String)
 
-    # Address
-    address_line1 = Column(String)
-    address_line2 = Column(String)
-    city = Column(String)
-    state = Column(String)
-    postal_code = Column(String)
-    country = Column(String, default="India", nullable=False)
+    # Address (database columns are camelCase)
+    address_line1 = Column("addressLine1", String)
+    address_line2 = Column("addressLine2", String)
+    city = Column("city", String)
+    state = Column("state", String)
+    postal_code = Column("postalCode", String)
+    country = Column("country", String, default="India", nullable=False)
 
-    # KYC details
-    id_type = Column(String)  # AADHAR, PASSPORT, DRIVING_LICENSE, PAN
-    id_number = Column(String)
-    id_proof_url = Column(String)
+    # KYC details (database columns are camelCase)
+    id_type = Column("idType", String)  # AADHAR, PASSPORT, DRIVING_LICENSE, PAN
+    id_number = Column("idNumber", String)
+    id_proof_url = Column("idProofUrl", String)
 
-    # Company details for corporate bookings
-    company_name = Column(String)
-    company_gst = Column(String)
-    company_address = Column(Text)
+    # Company details for corporate bookings (database columns are camelCase)
+    company_name = Column("companyName", String)
+    company_gst = Column("companyGst", String)
+    company_address = Column("companyAddress", Text)
 
-    # Authentication
-    password_hash = Column(String)
-    is_verified = Column(Boolean, default=False, nullable=False)
-    is_corporate = Column(Boolean, default=False, nullable=False)
+    # Authentication (database columns are camelCase) - password optional for phone-based auth
+    password_hash = Column("passwordHash", String, nullable=True)
+    is_verified = Column("isVerified", Boolean, default=False, nullable=False)
+    is_corporate = Column("isCorporate", Boolean, default=False, nullable=False)
 
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    last_login_at = Column(DateTime)
+    # Timestamps (database columns are camelCase)
+    created_at = Column("createdAt", DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column("updatedAt", DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    last_login_at = Column("lastLoginAt", DateTime)
 
     # Relations
     bookings = relationship("Booking", back_populates="customer", cascade="all, delete-orphan")
@@ -175,87 +176,87 @@ class Booking(Base):
     """Booking details for trips"""
     __tablename__ = "bookings"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
-    booking_number = Column(String, unique=True, nullable=False, index=True)
+    id = Column("id", String, primary_key=True, default=generate_uuid)
+    bookingNumber = Column("bookingNumber", String, unique=True, nullable=False, index=True)
 
     # Relations
-    customer_id = Column(String, ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
+    customerId = Column("customerId", String, ForeignKey("customers.id", ondelete="CASCADE"), nullable=False)
     customer = relationship("Customer", back_populates="bookings")
 
-    vehicle_id = Column(String, ForeignKey("vehicles.id"), nullable=False)
+    vehicleId = Column("vehicleId", String, ForeignKey("vehicles.id"), nullable=False)
     vehicle = relationship("Vehicle", back_populates="bookings")
 
-    driver_id = Column(String)  # Can link to Driver model if needed
+    driverId = Column("driverId", String)  # Can link to Driver model if needed
 
     # Trip details
-    trip_type = Column(Enum(TripType), nullable=False)
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime)
+    tripType = Column("tripType", Enum(TripType, name="TripType", values_callable=lambda x: [e.value for e in x]), nullable=False)
+    startDate = Column("startDate", DateTime, nullable=False)
+    endDate = Column("endDate", DateTime)
 
     # Route details (stored as JSON for flexibility)
-    pickup_location = Column(Text, nullable=False)
-    pickup_landmark = Column(String)
-    pickup_lat = Column(Numeric(10, 8))
-    pickup_lng = Column(Numeric(11, 8))
-    pickup_time = Column(DateTime, nullable=False)
+    pickupLocation = Column("pickupLocation", Text, nullable=False)
+    pickupLandmark = Column("pickupLandmark", String)
+    pickupLat = Column("pickupLat", Numeric(10, 8))
+    pickupLng = Column("pickupLng", Numeric(11, 8))
+    pickupTime = Column("pickupTime", DateTime, nullable=False)
 
-    drop_location = Column(Text, nullable=False)
-    drop_landmark = Column(String)
-    drop_lat = Column(Numeric(10, 8))
-    drop_lng = Column(Numeric(11, 8))
+    dropLocation = Column("dropLocation", Text, nullable=False)
+    dropLandmark = Column("dropLandmark", String)
+    dropLat = Column("dropLat", Numeric(10, 8))
+    dropLng = Column("dropLng", Numeric(11, 8))
 
     # For round-trip and multi-city
-    return_pickup_location = Column(Text)
-    return_drop_location = Column(Text)
-    return_pickup_time = Column(DateTime)
+    returnPickupLocation = Column("returnPickupLocation", Text)
+    returnDropLocation = Column("returnDropLocation", Text)
+    returnPickupTime = Column("returnPickupTime", DateTime)
 
     # Multi-city stops (JSON array of stops)
-    multi_city_stops = Column(Text)  # JSON: [{location, landmark, lat, lng, time}]
+    multiCityStops = Column("multiCityStops", Text)  # JSON: [{location, landmark, lat, lng, time}]
 
     # Distance and duration estimates
-    estimated_distance_km = Column(Numeric(10, 2))
-    estimated_duration_hours = Column(Numeric(10, 2))
+    estimatedDistanceKm = Column("estimatedDistanceKm", Numeric(10, 2))
+    estimatedDurationHours = Column("estimatedDurationHours", Numeric(10, 2))
 
     # Passenger count
-    passenger_count = Column(Integer, default=1, nullable=False)
+    passengerCount = Column("passengerCount", Integer, default=1, nullable=False)
 
     # Pricing details (in INR)
-    base_fare = Column(Numeric(10, 2), nullable=False)
-    distance_charge = Column(Numeric(10, 2), default=0, nullable=False)
-    driver_allowance = Column(Numeric(10, 2), default=0, nullable=False)
-    toll_charges = Column(Numeric(10, 2), default=0, nullable=False)
-    parking_charges = Column(Numeric(10, 2), default=0, nullable=False)
-    night_halt_charges = Column(Numeric(10, 2), default=0, nullable=False)
-    service_tax = Column(Numeric(10, 2), default=0, nullable=False)
-    discount = Column(Numeric(10, 2), default=0, nullable=False)
-    total_amount = Column(Numeric(10, 2), nullable=False)
-    advance_paid = Column(Numeric(10, 2), default=0, nullable=False)
-    balance_amount = Column(Numeric(10, 2), nullable=False)
+    baseFare = Column("baseFare", Numeric(10, 2), nullable=False)
+    distanceCharge = Column("distanceCharge", Numeric(10, 2), default=0, nullable=False)
+    driverAllowance = Column("driverAllowance", Numeric(10, 2), default=0, nullable=False)
+    tollCharges = Column("tollCharges", Numeric(10, 2), default=0, nullable=False)
+    parkingCharges = Column("parkingCharges", Numeric(10, 2), default=0, nullable=False)
+    nightHaltCharges = Column("nightHaltCharges", Numeric(10, 2), default=0, nullable=False)
+    serviceTax = Column("serviceTax", Numeric(10, 2), default=0, nullable=False)
+    discount = Column("discount", Numeric(10, 2), default=0, nullable=False)
+    totalAmount = Column("totalAmount", Numeric(10, 2), nullable=False)
+    advancePaid = Column("advancePaid", Numeric(10, 2), default=0, nullable=False)
+    balanceAmount = Column("balanceAmount", Numeric(10, 2), nullable=False)
 
     # Booking status
-    status = Column(Enum(BookingStatus), default=BookingStatus.PENDING, nullable=False)
-    payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+    status = Column("status", Enum(BookingStatus, name="BookingStatus", values_callable=lambda x: [e.value for e in x]), default=BookingStatus.PENDING, nullable=False)
+    paymentStatus = Column("paymentStatus", Enum(PaymentStatus, name="PaymentStatus", values_callable=lambda x: [e.value for e in x]), default=PaymentStatus.PENDING, nullable=False)
 
     # Additional details
-    special_requests = Column(Text)
-    notes = Column(Text)
-    cancellation_reason = Column(Text)
-    cancelled_at = Column(DateTime)
-    cancelled_by = Column(String)  # CUSTOMER, ADMIN, SYSTEM
+    specialRequests = Column("specialRequests", Text)
+    notes = Column("notes", Text)
+    cancellationReason = Column("cancellationReason", Text)
+    cancelledAt = Column("cancelledAt", DateTime)
+    cancelledBy = Column("cancelledBy", String)  # CUSTOMER, ADMIN, SYSTEM
 
     # Driver details (assigned driver)
-    driver_name = Column(String)
-    driver_phone = Column(String)
+    driverName = Column("driverName", String)
+    driverPhone = Column("driverPhone", String)
 
     # Payment tracking
-    payment_due_amount = Column(Numeric(10, 2), nullable=False)
-    payment_due_date = Column(DateTime)
+    paymentDueAmount = Column("paymentDueAmount", Numeric(10, 2), nullable=False)
+    paymentDueDate = Column("paymentDueDate", DateTime)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    confirmed_at = Column(DateTime)
-    completed_at = Column(DateTime)
+    createdAt = Column("createdAt", DateTime, default=datetime.utcnow, nullable=False)
+    updatedAt = Column("updatedAt", DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    confirmedAt = Column("confirmedAt", DateTime)
+    completedAt = Column("completedAt", DateTime)
 
     # Relations
     payments = relationship("Payment", back_populates="booking", cascade="all, delete-orphan")

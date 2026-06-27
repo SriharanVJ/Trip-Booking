@@ -65,7 +65,7 @@ export function BookingConfirmation({ booking, vehicle, trip, customer, amount }
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-2xl font-bold text-green-900">Booking Confirmed!</h1>
               <p className="text-green-700">
-                Your booking has been successfully completed. We've sent the confirmation to your email.
+                Your booking has been successfully completed. We&apos;ve sent the confirmation to your email.
               </p>
             </div>
           </div>
@@ -216,7 +216,7 @@ export function BookingConfirmation({ booking, vehicle, trip, customer, amount }
       {/* Next Steps */}
       <Card className="bg-muted/50">
         <CardHeader>
-          <CardTitle>What's Next?</CardTitle>
+          <CardTitle>What&apos;s Next?</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-3 text-sm">
@@ -226,7 +226,7 @@ export function BookingConfirmation({ booking, vehicle, trip, customer, amount }
               </div>
               <div>
                 <p className="font-medium">Check your email</p>
-                <p className="text-muted-foreground">We've sent a confirmation email with all the booking details to {customer.email}</p>
+                <p className="text-muted-foreground">We&apos;ve sent a confirmation email with all the booking details to {customer.email}</p>
               </div>
             </li>
             <li className="flex items-start gap-3">

@@ -3,10 +3,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 import random
+
+
+def make_naive(dt: datetime) -> datetime:
+    """Convert timezone-aware datetime to naive datetime by removing timezone info"""
+    if dt.tzinfo is not None:
+        return dt.replace(tzinfo=None)
+    return dt
 
 from app.db.session import get_db
 from app.db.crud import (
@@ -65,65 +72,79 @@ async def create_booking_endpoint(
                 detail=f"Vehicle with ID {booking_data.vehicle_id} not found"
             )
 
-        if not vehicle.is_available:
+        if not vehicle.isAvailable:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Vehicle is not available for booking"
             )
 
-        # For now, use customer_id from request or create a guest customer
-        # In production, this would come from JWT token
+        # Handle customer - either from authenticated user or create/find by phone
         customer_id = booking_data.customer_id
-        if not customer_id:
-            # Check if email exists, if not create guest
-            from app.db.crud import get_customer_by_email, create_customer
-            existing = await get_customer_by_email(db, booking_data.contact_email or f"guest_{uuid4()}@temp.com")
+        if not customer_id and booking_data.contact_phone:
+            # For guest bookings, try to find existing customer by phone or create new one
+            from app.db.crud import get_customer_by_phone, create_customer
+
+            # Extract name parts from contact_name
+            name_parts = (booking_data.contact_name or "Guest User").split(" ", 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else "User"
+
+            existing = await get_customer_by_phone(db, booking_data.contact_phone)
             if existing:
                 customer_id = existing.id
             else:
+                # Create new guest customer with phone number (no password needed)
                 customer = await create_customer(
                     db=db,
-                    first_name=booking_data.contact_name or "Guest",
-                    last_name="User",
-                    email=booking_data.contact_email or f"guest_{uuid4()}@temp.com",
-                    password=str(uuid4()),  # Random password for guest
-                    phone=booking_data.contact_phone or "0000000000"
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=booking_data.contact_email or f"{booking_data.contact_phone}@guest.tmp",
+                    phone=booking_data.contact_phone,
+                    password=None  # No password for phone-based auth
                 )
                 customer_id = customer.id
+        elif not customer_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Either customer_id (for authenticated users) or contact_phone (for guest bookings) must be provided"
+            )
 
         # Calculate pricing
         estimated_distance = booking_data.estimated_distance_km or Decimal("100")
         estimated_duration = booking_data.estimated_duration_hours
 
-        # Calculate price using pricing service
+        # Convert trip_type from lowercase (one_way) to uppercase (ONE_WAY) for database ENUM
+        trip_type_upper = booking_data.trip_type.upper().replace('-', '_')
+
+        # Calculate price using pricing service - convert camelCase to snake_case
         price_breakdown = await pricing_service.calculate_price(
             vehicle_data={
-                "price_per_km": vehicle.price_per_km,
-                "minimum_charge": vehicle.minimum_charge,
-                "driver_allowance_per_day": vehicle.driver_allowance_per_day,
-                "minimum_days": vehicle.minimum_days
+                "price_per_km": vehicle.pricePerKm,
+                "minimum_charge": vehicle.minimumCharge,
+                "driver_allowance_per_day": vehicle.driverAllowancePerDay,
+                "minimum_days": vehicle.minimumDays
             },
-            trip_type=booking_data.trip_type,
+            trip_type=trip_type_upper,
             distance_km=estimated_distance,
             duration_hours=estimated_duration,
-            start_date=booking_data.start_date,
-            end_date=booking_data.end_date,
+            start_date=make_naive(booking_data.start_date),
+            end_date=make_naive(booking_data.end_date),
             include_toll=True,
             promo_discount=None,
             promo_code=booking_data.promo_code
         )
 
-        # Create booking
+        # Create booking - convert timezone-aware datetimes to naive datetimes
         booking = await create_booking(
             db=db,
             customer_id=customer_id,
             vehicle_id=booking_data.vehicle_id,
-            trip_type=booking_data.trip_type,
-            start_date=booking_data.start_date,
+            trip_type=trip_type_upper,
+            start_date=make_naive(booking_data.start_date),
             pickup_location=booking_data.pickup_location.address,
-            pickup_time=booking_data.pickup_time,
+            pickup_time=make_naive(booking_data.pickup_time),
             drop_location=booking_data.drop_location.address,
-            end_date=booking_data.end_date,
+            end_date=make_naive(booking_data.end_date) if booking_data.end_date else None,
             pickup_landmark=booking_data.pickup_location.landmark,
             pickup_lat=booking_data.pickup_location.latitude,
             pickup_lng=booking_data.pickup_location.longitude,
@@ -132,7 +153,7 @@ async def create_booking_endpoint(
             drop_lng=booking_data.drop_location.longitude,
             return_pickup_location=booking_data.return_pickup_location.address if booking_data.return_pickup_location else None,
             return_drop_location=booking_data.return_drop_location.address if booking_data.return_drop_location else None,
-            return_pickup_time=booking_data.return_pickup_time,
+            return_pickup_time=make_naive(booking_data.return_pickup_time) if booking_data.return_pickup_time else None,
             estimated_distance_km=estimated_distance,
             estimated_duration_hours=estimated_duration,
             passenger_count=booking_data.passenger_count,
@@ -153,9 +174,9 @@ async def create_booking_endpoint(
 
         return {
             "id": booking.id,
-            "bookingNumber": booking.booking_number,
+            "bookingNumber": booking.bookingNumber,
             "status": booking.status.value,
-            "totalAmount": float(booking.total_amount),
+            "totalAmount": float(booking.totalAmount),
             "advanceRequired": float(price_breakdown.get("advance_required", 0)),
             "message": "Booking created successfully"
         }
@@ -200,17 +221,17 @@ async def list_bookings_endpoint(
         for booking in bookings:
             result.append({
                 "id": booking.id,
-                "bookingNumber": booking.booking_number,
-                "customerId": booking.customer_id,
-                "vehicleId": booking.vehicle_id,
-                "tripType": booking.trip_type.value,
-                "startDate": booking.start_date.isoformat() if booking.start_date else None,
-                "endDate": booking.end_date.isoformat() if booking.end_date else None,
-                "pickupLocation": booking.pickup_location,
-                "dropLocation": booking.drop_location,
+                "bookingNumber": booking.bookingNumber,
+                "customerId": booking.customerId,
+                "vehicleId": booking.vehicleId,
+                "tripType": booking.tripType.value,
+                "startDate": booking.startDate.isoformat() if booking.startDate else None,
+                "endDate": booking.endDate.isoformat() if booking.endDate else None,
+                "pickupLocation": booking.pickupLocation,
+                "dropLocation": booking.dropLocation,
                 "status": booking.status.value,
-                "totalAmount": float(booking.total_amount),
-                "createdAt": booking.created_at.isoformat() if booking.created_at else None,
+                "totalAmount": float(booking.totalAmount),
+                "createdAt": booking.createdAt.isoformat() if booking.createdAt else None,
             })
 
         return result
@@ -244,44 +265,44 @@ async def get_booking_endpoint(
 
         return {
             "id": booking.id,
-            "bookingNumber": booking.booking_number,
-            "customerId": booking.customer_id,
-            "vehicleId": booking.vehicle_id,
-            "tripType": booking.trip_type.value,
-            "startDate": booking.start_date.isoformat() if booking.start_date else None,
-            "endDate": booking.end_date.isoformat() if booking.end_date else None,
-            "pickupLocation": booking.pickup_location,
-            "pickupLandmark": booking.pickup_landmark,
-            "pickupLat": float(booking.pickup_lat) if booking.pickup_lat else None,
-            "pickupLng": float(booking.pickup_lng) if booking.pickup_lng else None,
-            "pickupTime": booking.pickup_time.isoformat() if booking.pickup_time else None,
-            "dropLocation": booking.drop_location,
-            "dropLandmark": booking.drop_landmark,
-            "dropLat": float(booking.drop_lat) if booking.drop_lat else None,
-            "dropLng": float(booking.drop_lng) if booking.drop_lng else None,
-            "returnPickupLocation": booking.return_pickup_location,
-            "returnDropLocation": booking.return_drop_location,
-            "returnPickupTime": booking.return_pickup_time.isoformat() if booking.return_pickup_time else None,
-            "estimatedDistanceKm": float(booking.estimated_distance_km) if booking.estimated_distance_km else None,
-            "estimatedDurationHours": float(booking.estimated_duration_hours) if booking.estimated_duration_hours else None,
-            "passengerCount": booking.passenger_count,
-            "baseFare": float(booking.base_fare),
-            "distanceCharge": float(booking.distance_charge),
-            "driverAllowance": float(booking.driver_allowance),
-            "tollCharges": float(booking.toll_charges),
-            "parkingCharges": float(booking.parking_charges),
-            "nightHaltCharges": float(booking.night_halt_charges),
-            "serviceTax": float(booking.service_tax),
+            "bookingNumber": booking.bookingNumber,
+            "customerId": booking.customerId,
+            "vehicleId": booking.vehicleId,
+            "tripType": booking.tripType.value,
+            "startDate": booking.startDate.isoformat() if booking.startDate else None,
+            "endDate": booking.endDate.isoformat() if booking.endDate else None,
+            "pickupLocation": booking.pickupLocation,
+            "pickupLandmark": booking.pickupLandmark,
+            "pickupLat": float(booking.pickupLat) if booking.pickupLat else None,
+            "pickupLng": float(booking.pickupLng) if booking.pickupLng else None,
+            "pickupTime": booking.pickupTime.isoformat() if booking.pickupTime else None,
+            "dropLocation": booking.dropLocation,
+            "dropLandmark": booking.dropLandmark,
+            "dropLat": float(booking.dropLat) if booking.dropLat else None,
+            "dropLng": float(booking.dropLng) if booking.dropLng else None,
+            "returnPickupLocation": booking.returnPickupLocation,
+            "returnDropLocation": booking.returnDropLocation,
+            "returnPickupTime": booking.returnPickupTime.isoformat() if booking.returnPickupTime else None,
+            "estimatedDistanceKm": float(booking.estimatedDistanceKm) if booking.estimatedDistanceKm else None,
+            "estimatedDurationHours": float(booking.estimatedDurationHours) if booking.estimatedDurationHours else None,
+            "passengerCount": booking.passengerCount,
+            "baseFare": float(booking.baseFare),
+            "distanceCharge": float(booking.distanceCharge),
+            "driverAllowance": float(booking.driverAllowance),
+            "tollCharges": float(booking.tollCharges),
+            "parkingCharges": float(booking.parkingCharges),
+            "nightHaltCharges": float(booking.nightHaltCharges),
+            "serviceTax": float(booking.serviceTax),
             "discount": float(booking.discount),
-            "totalAmount": float(booking.total_amount),
-            "advancePaid": float(booking.advance_paid),
-            "balanceAmount": float(booking.balance_amount),
+            "totalAmount": float(booking.totalAmount),
+            "advancePaid": float(booking.advancePaid),
+            "balanceAmount": float(booking.balanceAmount),
             "status": booking.status.value,
-            "specialRequests": booking.special_requests,
+            "specialRequests": booking.specialRequests,
             "notes": booking.notes,
-            "createdAt": booking.created_at.isoformat() if booking.created_at else None,
-            "confirmedAt": booking.confirmed_at.isoformat() if booking.confirmed_at else None,
-            "completedAt": booking.completed_at.isoformat() if booking.completed_at else None,
+            "createdAt": booking.createdAt.isoformat() if booking.createdAt else None,
+            "confirmedAt": booking.confirmedAt.isoformat() if booking.confirmedAt else None,
+            "completedAt": booking.completedAt.isoformat() if booking.completedAt else None,
         }
 
     except HTTPException:
@@ -315,7 +336,7 @@ async def get_booking_by_number_endpoint(
 
         return {
             "id": booking.id,
-            "bookingNumber": booking.booking_number,
+            "bookingNumber": booking.bookingNumber,
             "customerId": booking.customer_id,
             "vehicleId": booking.vehicle_id,
             "status": booking.status.value,
@@ -393,7 +414,7 @@ async def confirm_booking_endpoint(
 
         return {
             "id": booking.id,
-            "bookingNumber": booking.booking_number,
+            "bookingNumber": booking.bookingNumber,
             "status": booking.status.value,
             "message": "Booking confirmed successfully"
         }

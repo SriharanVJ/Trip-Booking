@@ -275,7 +275,7 @@ export function DashboardStats() {
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
                     padding: '12px'
                   }}
-                  formatter={(value: number) => [`Rs. ${value.toLocaleString()}`, 'Revenue']}
+                  formatter={(value: any) => [`Rs. ${(Number(value) || 0).toLocaleString()}`, 'Revenue']}
                 />
                 <Area
                   type="monotone"

@@ -1,6 +1,6 @@
 """Vehicle schemas for request/response validation"""
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, model_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from decimal import Decimal
@@ -259,6 +259,18 @@ class BookingCreate(BaseModel):
     special_requests: Optional[str] = None
     notes: Optional[str] = None
     promo_code: Optional[str] = None
+    # Phone-based booking - REQUIRED when customer_id is not provided
+    contact_name: Optional[str] = None
+    contact_phone: Optional[str] = None  # Phone number is required for guest bookings
+    contact_email: Optional[EmailStr] = None  # Email is optional
+    captcha_token: Optional[str] = None  # For captcha verification
+
+    # Validation to ensure either customer_id or contact phone is provided
+    @model_validator(mode='after')
+    def check_customer_or_contact(self):
+        if not self.customer_id and not self.contact_phone:
+            raise ValueError("Either customer_id (for authenticated users) or contact_phone (for guest bookings) must be provided")
+        return self
 
 
 class BookingResponse(BaseModel):

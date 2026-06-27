@@ -43,6 +43,8 @@ export interface Vehicle {
   description: string
   specifications: VehicleSpecifications
   available: boolean
+  fuelType?: string  // From backend: PETROL, DIESEL, CNG, ELECTRIC
+  pricePerDay?: number  // Daily pricing option
 }
 
 export type VehicleType = 'car' | 'traveller' | 'coach' | 'bus'
@@ -62,6 +64,18 @@ export type VehicleAmenity =
   | 'gps'
   | 'rear-camera'
   | 'pushback-seat'
+  | 'bluetooth'
+  | 'usb'
+  | 'usb-charging'
+  | 'entertainment'
+  | 'entertainment-system'
+  | 'reading-light'
+  | 'luggage-space'
+  | 'reclining-seat'
+  | 'reclining-seats'
+  | 'passenger-display'
+  | 'microphone'
+  | 'refrigerator'
 
 export interface VehicleSpecifications {
   engine: string

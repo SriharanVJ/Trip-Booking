@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import { VehicleDetails, VehicleDetailsSkeleton } from '@/components/vehicle/VehicleDetails'
 import { AvailabilityCalendar, generateSampleAvailability } from '@/components/vehicle/AvailabilityCalendar'
@@ -10,304 +10,91 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Crown, Sparkles, Shield, Star, Users, Award, Check, ArrowRight } from 'lucide-react'
 import type { Vehicle } from '@/types'
-
-// Sample data - in real app, this would come from API
-const getSampleVehicle = (id: string): Vehicle | null => {
-  const vehicles: Record<string, Vehicle> = {
-    'v1': {
-      id: 'v1',
-      name: 'Toyota Innova Crysta',
-      type: 'car',
-      make: 'Toyota',
-      model: 'Innova Crysta',
-      year: 2023,
-      seatingCapacity: 7,
-      amenities: ['ac', 'wifi', 'charging-point', 'music-system', 'gps'],
-      imageUrl: '/images/vehicles/innova-crysta.jpg',
-      images: [
-        '/images/vehicles/innova-crysta.jpg',
-        '/images/vehicles/innova-crysta-2.jpg',
-        '/images/vehicles/innova-crysta-3.jpg',
-        '/images/vehicles/innova-crysta-4.jpg',
-      ],
-      rating: 4.8,
-      reviewCount: 124,
-      basePrice: 18,
-      priceUnit: 'per-km',
-      minCharge: 250,
-      driverCharges: 500,
-      features: [
-        'Premium leather seats with adjustable headrests',
-        'Spacious luggage compartment (343L capacity)',
-        'Professional and experienced driver',
-        '24/7 customer support and roadside assistance',
-        'Real-time GPS tracking enabled',
-        'Comprehensive insurance included',
-        'Regular sanitization and maintenance',
-      ],
-      description:
-        'Experience luxury travel with the Toyota Innova Crysta. This premium MPV offers the perfect blend of comfort, style, and performance, making it ideal for family vacations, business trips, and weekend getaways. The spacious interior ensures a comfortable journey for all passengers, while the powerful diesel engine delivers excellent fuel efficiency without compromising on performance.',
-      specifications: {
-        engine: '2.8L 4-Cylinder Diesel',
-        fuelType: 'diesel',
-        transmission: 'automatic',
-        mileage: '11.4 kmpl',
-        luggageCapacity: '343L',
-      },
-      available: true,
-    },
-    'v2': {
-      id: 'v2',
-      name: 'Force Traveller 3350',
-      type: 'traveller',
-      make: 'Force',
-      model: 'Traveller 3350',
-      year: 2022,
-      seatingCapacity: 14,
-      amenities: ['ac', 'charging-point', 'pushback-seat', 'music-system', 'first-aid-kit', 'fire-extinguisher'],
-      imageUrl: '/images/vehicles/traveller.jpg',
-      images: [
-        '/images/vehicles/traveller.jpg',
-        '/images/vehicles/traveller-2.jpg',
-        '/images/vehicles/traveller-3.jpg',
-      ],
-      rating: 4.5,
-      reviewCount: 89,
-      basePrice: 24,
-      priceUnit: 'per-km',
-      minCharge: 300,
-      driverCharges: 600,
-      features: [
-        'Pushback seats for enhanced comfort',
-        'Ample legroom and headroom',
-        'First aid kit included for safety',
-        'Fire safety equipment as per regulations',
-        'Experienced and trained driver',
-        'Large luggage space',
-        'Individual reading lights',
-      ],
-      description:
-        'The Force Traveller 3350 is designed for group travel, offering comfortable seating for up to 14 passengers. With its powerful engine and reliable performance, it\'s perfect for corporate outings, family gatherings, pilgrimage tours, and school trips. The vehicle features pushback seats, individual AC vents, and a music system to keep your group comfortable and entertained throughout the journey.',
-      specifications: {
-        engine: '2.6L Common Rail Diesel',
-        fuelType: 'diesel',
-        transmission: 'manual',
-        mileage: '9 kmpl',
-        luggageCapacity: '500L',
-      },
-      available: true,
-    },
-    'v3': {
-      id: 'v3',
-      name: 'Volvo 9400XL Coach',
-      type: 'coach',
-      make: 'Volvo',
-      model: '9400XL',
-      year: 2023,
-      seatingCapacity: 36,
-      amenities: [
-        'ac',
-        'wifi',
-        'charging-point',
-        'tv',
-        'toilet',
-        'water-bottle',
-        'blanket',
-        'meal',
-        'pushback-seat',
-        'music-system',
-        'first-aid-kit',
-        'fire-extinguisher',
-      ],
-      imageUrl: '/images/vehicles/volvo-coach.jpg',
-      images: [
-        '/images/vehicles/volvo-coach.jpg',
-        '/images/vehicles/volvo-coach-2.jpg',
-        '/images/vehicles/volvo-coach-3.jpg',
-        '/images/vehicles/volvo-coach-4.jpg',
-        '/images/vehicles/volvo-coach-5.jpg',
-      ],
-      rating: 4.9,
-      reviewCount: 256,
-      basePrice: 35,
-      priceUnit: 'per-km',
-      minCharge: 500,
-      driverCharges: 800,
-      features: [
-        'Luxury recliner seats with leg support',
-        'Individual entertainment screens at each seat',
-        'Onboard clean and maintained restrooms',
-        'Complimentary meals and beverages',
-        'High-speed WiFi connectivity throughout journey',
-        'USB charging port at every seat',
-        'Reading lights and AC controls',
-        'Ample overhead and under-seat luggage storage',
-        'GPS tracking and live location sharing',
-        'Two professional drivers for long journeys',
-      ],
-      description:
-        'Experience the pinnacle of luxury travel with the Volvo 9400XL Coach. This premium luxury coach is designed for discerning travelers who demand the best. Every seat is a business-class experience with personal entertainment, charging ports, and meal service. The onboard restroom ensures comfort on long-distance journeys. Perfect for corporate retreats, wedding groups, and premium tour packages.',
-      specifications: {
-        engine: '11L D11C Diesel',
-        fuelType: 'diesel',
-        transmission: 'automatic',
-        mileage: '4.5 kmpl',
-        length: '12 meters',
-        width: '2.6 meters',
-        height: '3.8 meters',
-        luggageCapacity: '2000L',
-      },
-      available: true,
-    },
-    'v4': {
-      id: 'v4',
-      name: 'Mercedes Benz Sprinter',
-      type: 'traveller',
-      make: 'Mercedes-Benz',
-      model: 'Sprinter',
-      year: 2023,
-      seatingCapacity: 9,
-      amenities: ['ac', 'wifi', 'charging-point', 'gps', 'rear-camera', 'pushback-seat'],
-      imageUrl: '/images/vehicles/sprinter.jpg',
-      images: [
-        '/images/vehicles/sprinter.jpg',
-        '/images/vehicles/sprinter-2.jpg',
-        '/images/vehicles/sprinter-3.jpg',
-      ],
-      rating: 4.7,
-      reviewCount: 67,
-      basePrice: 28,
-      priceUnit: 'per-km',
-      minCharge: 350,
-      driverCharges: 600,
-      features: [
-        'Premium interior finish with quality materials',
-        'Advanced safety features including multiple airbags',
-        'Dual-zone climate control',
-        'Spacious and flexible seating arrangement',
-        'Parking sensors and rear camera',
-        'Bluetooth connectivity',
-        'Noise insulation for quiet cabin',
-      ],
-      description:
-        'The Mercedes-Benz Sprinter combines luxury with functionality, making it the preferred choice for corporate travel and premium small group transfers. With its signature Mercedes build quality, advanced safety features, and premium interiors, every journey becomes a memorable experience.',
-      specifications: {
-        engine: '2.1L 4-Cylinder Diesel Turbo',
-        fuelType: 'diesel',
-        transmission: 'automatic',
-        mileage: '12 kmpl',
-        luggageCapacity: '400L',
-      },
-      available: true,
-    },
-    'v5': {
-      id: 'v5',
-      name: 'AC Seater Bus 52',
-      type: 'bus',
-      make: 'Tata',
-      model: 'AC Seater',
-      year: 2022,
-      seatingCapacity: 52,
-      amenities: ['ac', 'charging-point', 'pushback-seat', 'music-system', 'first-aid-kit', 'fire-extinguisher'],
-      imageUrl: '/images/vehicles/ac-bus.jpg',
-      images: [
-        '/images/vehicles/ac-bus.jpg',
-        '/images/vehicles/ac-bus-2.jpg',
-      ],
-      rating: 4.3,
-      reviewCount: 142,
-      basePrice: 42,
-      priceUnit: 'per-km',
-      minCharge: 800,
-      driverCharges: 1000,
-      features: [
-        'Large group capacity (52 passengers)',
-        'Comfortable pushback seats with armrests',
-        'Individual AC vents for temperature control',
-        'Ample under-seat and overhead luggage space',
-        'Audio system for announcements',
-        'Emergency exits as per safety norms',
-        'Suspension designed for long-distance comfort',
-      ],
-      description:
-        'Perfect for large groups, tours, and events. This 52-seater AC bus offers comfort, reliability, and economy for group travel. Whether it\'s a school excursion, corporate event, wedding group, or pilgrimage tour, this bus handles large groups efficiently while ensuring passenger comfort throughout the journey.',
-      specifications: {
-        engine: '6L Cummins Diesel',
-        fuelType: 'diesel',
-        transmission: 'manual',
-        mileage: '5 kmpl',
-        length: '12 meters',
-        width: '2.4 meters',
-        height: '3.5 meters',
-        luggageCapacity: '3000L',
-      },
-      available: true,
-    },
-    'v6': {
-      id: 'v6',
-      name: 'Tempo Traveller 26',
-      type: 'traveller',
-      make: 'Force',
-      model: 'Tempo Traveller',
-      year: 2021,
-      seatingCapacity: 26,
-      amenities: ['ac', 'charging-point', 'pushback-seat', 'music-system', 'first-aid-kit', 'fire-extinguisher'],
-      imageUrl: '/images/vehicles/tempo.jpg',
-      images: [
-        '/images/vehicles/tempo.jpg',
-        '/images/vehicles/tempo-2.jpg',
-      ],
-      rating: 4.4,
-      reviewCount: 98,
-      basePrice: 26,
-      priceUnit: 'per-km',
-      minCharge: 400,
-      driverCharges: 700,
-      features: [
-        'Pushback seats for comfort',
-        'Music system with USB connectivity',
-        'First aid kit included',
-        'Fire extinguisher for safety',
-        'Large windows for panoramic views',
-        'Overhead storage racks',
-        'AC with multiple vents',
-      ],
-      description:
-        'An economical group travel solution, the Tempo Traveller 26 seater is perfect for medium-sized groups. Offering a balance of comfort and affordability, it\'s ideal for family outings, small corporate events, school trips, and pilgrimage tours where budget is a consideration but comfort cannot be compromised.',
-      specifications: {
-        engine: '2.6L FM 2.6 CR Diesel',
-        fuelType: 'diesel',
-        transmission: 'manual',
-        mileage: '8 kmpl',
-        luggageCapacity: '800L',
-      },
-      available: true,
-    },
-  }
-
-  return vehicles[id] || null
-}
+import { vehicleApi } from '@/lib/api'
 
 export default function VehicleDetailsPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [availabilities, setAvailabilities] = useState<any[]>([])
 
   useEffect(() => {
-    const id = params.id as string
+    const loadVehicle = async () => {
+      const id = params.id as string
+      console.log('Loading vehicle with ID:', id)
 
-    // Simulate API call
-    setTimeout(() => {
-      const foundVehicle = getSampleVehicle(id)
-      setVehicle(foundVehicle || null)
-      setLoading(false)
+      try {
+        setLoading(true)
+        setError(null)
 
-      if (foundVehicle) {
+        console.log('Calling API...')
+        // Fetch vehicle from API
+        const response = await vehicleApi.getVehicle(id)
+        console.log('API response:', response.data)
+
+        // Transform API response to match Vehicle type
+        const vehicleData: Vehicle = {
+          id: response.data.id,
+          name: response.data.name,
+          type: response.data.type,
+          make: response.data.make,
+          model: response.data.model,
+          year: response.data.year,
+          seatingCapacity: response.data.seatingCapacity,
+          amenities: response.data.amenities || [],
+          imageUrl: response.data.thumbnailImage || response.data.images?.[0] || '/images/placeholder-vehicle.jpg',
+          images: response.data.images || [],
+          rating: response.data.rating || 4.5,
+          reviewCount: response.data.reviewCount || 0,
+          basePrice: response.data.pricePerKm,
+          priceUnit: 'per-km',
+          minCharge: response.data.minimumCharge,
+          driverCharges: response.data.driverAllowancePerDay,
+          features: response.data.features?.features || [],
+          description: response.data.description || '',
+          specifications: response.data.specifications || {},
+          available: response.data.isAvailable !== false,
+          fuelType: response.data.fuelType || 'DIESEL',
+          pricePerDay: response.data.pricePerDay,
+        }
+
+        console.log('Transformed vehicle data:', vehicleData)
+        setVehicle(vehicleData)
         setAvailabilities(generateSampleAvailability(new Date()))
+
+        // If book=true query param is set, redirect to booking page with search params
+        if (searchParams.get('book') === 'true') {
+          // Build booking URL with preserved search params
+          const bookingParams = new URLSearchParams()
+
+          // Preserve search params from the current URL
+          const origin = searchParams.get('origin')
+          const destination = searchParams.get('destination')
+          const date = searchParams.get('date')
+          const passengers = searchParams.get('passengers')
+
+          if (origin) bookingParams.set('origin', origin)
+          if (destination) bookingParams.set('destination', destination)
+          if (date) bookingParams.set('date', date)
+          if (passengers) bookingParams.set('passengers', passengers)
+
+          const bookingUrl = `/book/${params.id}${bookingParams.toString() ? '?' + bookingParams.toString() : ''}`
+          router.push(bookingUrl)
+        }
+      } catch (err) {
+        console.error('Failed to load vehicle:', err)
+        console.error('Error details:', (err as any)?.response?.data || (err as any)?.message)
+        setError('Failed to load vehicle details. Please try again later.')
+        setVehicle(null)
+      } finally {
+        setLoading(false)
       }
-    }, 800)
+    }
+
+    loadVehicle()
   }, [params.id])
 
   const handleBookNow = () => {
@@ -344,7 +131,7 @@ export default function VehicleDetailsPage() {
                 Vehicle Unavailable
               </h1>
               <p className="text-lg text-warm-white-dark/70 mb-10 leading-relaxed">
-                The vehicle you're looking for doesn't exist or has been removed from our premium collection.
+                The vehicle you&apos;re looking for doesn&apos;t exist or has been removed from our premium collection.
               </p>
               <Button
                 className="h-14 px-8 bg-gradient-to-r from-gold to-gold-light text-black hover:from-gold-light hover:to-gold font-display font-semibold rounded-xl shadow-gold-lg shimmer-gold"

@@ -1,7 +1,7 @@
 """API router aggregation"""
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, buses, bookings, admin, vehicles, availability
+from app.api.v1.endpoints import auth, buses, bookings, admin, vehicles, availability, routes
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(bookings.router, prefix="/bookings", tags=["bookings"]
 api_router.include_router(availability.router, prefix="/availability", tags=["availability"])
 api_router.include_router(buses.router, prefix="/buses", tags=["buses"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
+api_router.include_router(routes.router, prefix="/routes", tags=["routes"])

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { CreditCard, IndianRupee, Smartphone, Building2, Truck, Clock, MapPin, Users, CheckCircle2, AlertCircle, Shield, ChevronDown, ChevronUp } from 'lucide-react'
+import { CreditCard, IndianRupee, Smartphone, Building2, Truck, Clock, MapPin, Users, CheckCircle2, AlertCircle, Shield, ChevronDown, ChevronUp, Calendar } from 'lucide-react'
+import { User as UserIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -252,7 +253,7 @@ export function ReviewAndPay({ vehicle, trip, customer, onBack, onSubmit }: Revi
         <CardHeader>
           <CardTitle className="flex items-center justify-between cursor-pointer" onClick={() => toggleSection('customer')}>
             <span className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <UserIcon className="h-5 w-5" />
               Contact Details
             </span>
             {expandedSection === 'customer' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -506,16 +507,26 @@ export function ReviewAndPay({ vehicle, trip, customer, onBack, onSubmit }: Revi
               <Checkbox
                 id="paymentTerms"
                 checked={acceptTerms}
-                onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                onCheckedChange={(checked) => {
+                  console.log('Checkbox changed:', checked)
+                  setAcceptTerms(checked as boolean)
+                }}
               />
               <div className="flex-1">
-                <Label htmlFor="paymentTerms" className="cursor-pointer">
+                <Label htmlFor="paymentTerms" className="cursor-pointer" onClick={() => {
+                  console.log('Label clicked, toggling acceptTerms')
+                  setAcceptTerms(!acceptTerms)
+                }}>
                   I agree to the payment terms and cancellation policy
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
                   Free cancellation up to 24 hours before pickup. 50% refund for cancellations within 24 hours.
                 </p>
               </div>
+            </div>
+            {/* Debug info */}
+            <div className="text-xs text-muted-foreground mt-2">
+              Debug: acceptTerms = {acceptTerms.toString()}, button disabled = {(!acceptTerms || isProcessingPayment).toString()}
             </div>
           </div>
         </CardContent>

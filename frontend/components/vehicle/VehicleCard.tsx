@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   MapPin,
   Users,
@@ -16,7 +17,6 @@ import {
   ArrowRight,
   Calendar,
   Fuel,
-  Gauge,
   Heart,
   Share2,
   ChevronRight,
@@ -25,6 +25,7 @@ import {
   Gem,
   Award,
   Clock,
+  Wind,
 } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -37,10 +38,11 @@ interface VehicleCardProps {
   vehicle: Vehicle
   onViewDetails?: () => void
   variant?: 'default' | 'compact' | 'featured'
+  priority?: boolean
 }
 
-const amenityIcons: Record<VehicleAmenity, React.ReactNode> = {
-  ac: <Zap className="h-3.5 w-3.5" />,
+const amenityIcons: Record<string, React.ReactNode> = {
+  ac: <Wind className="h-3.5 w-3.5" />,
   wifi: <Wifi className="h-3.5 w-3.5" />,
   'charging-point': <Zap className="h-3.5 w-3.5" />,
   tv: <Tv className="h-3.5 w-3.5" />,
@@ -54,6 +56,18 @@ const amenityIcons: Record<VehicleAmenity, React.ReactNode> = {
   gps: <MapPin className="h-3.5 w-3.5" />,
   'rear-camera': <Shield className="h-3.5 w-3.5" />,
   'pushback-seat': <Users className="h-3.5 w-3.5" />,
+  bluetooth: <Music className="h-3.5 w-3.5" />,
+  usb: <Zap className="h-3.5 w-3.5" />,
+  'usb-charging': <Zap className="h-3.5 w-3.5" />,
+  entertainment: <Tv className="h-3.5 w-3.5" />,
+  'entertainment-system': <Tv className="h-3.5 w-3.5" />,
+  'reading-light': <Zap className="h-3.5 w-3.5" />,
+  'luggage-space': <Package className="h-3.5 w-3.5" />,
+  'reclining-seat': <Users className="h-3.5 w-3.5" />,
+  'reclining-seats': <Users className="h-3.5 w-3.5" />,
+  'passenger-display': <Tv className="h-3.5 w-3.5" />,
+  microphone: <Music className="h-3.5 w-3.5" />,
+  refrigerator: <Package className="h-3.5 w-3.5" />,
 }
 
 const vehicleTypeConfig: Record<string, { label: string; gradient: string; icon: any; badgeClass: string; color: string }> = {
@@ -128,16 +142,37 @@ export function VehicleCardSkeleton({ variant = 'default' }: { variant?: 'defaul
   )
 }
 
-export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: VehicleCardProps) {
+export function VehicleCard({ vehicle, onViewDetails, variant = 'default', priority = false }: VehicleCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
+  const searchParams = useSearchParams()
 
   const displayAmenities = vehicle.amenities.slice(0, 4)
   const remainingAmenities = vehicle.amenities.length - 4
   const typeConfig = vehicleTypeConfig[vehicle.type] || vehicleTypeConfig.car
   const TypeIcon = typeConfig.icon
+
+  // Build booking URL with search params
+  const buildBookingUrl = () => {
+    const params = new URLSearchParams()
+    params.set('book', 'true')
+
+    // Preserve search params if available
+    if (searchParams) {
+      const origin = searchParams.get('origin')
+      const destination = searchParams.get('destination')
+      const date = searchParams.get('date')
+      const passengers = searchParams.get('passengers')
+
+      if (origin) params.set('origin', origin)
+      if (destination) params.set('destination', destination)
+      if (date) params.set('date', date)
+      if (passengers) params.set('passengers', passengers)
+    }
+
+    return `/vehicles/${vehicle.id}?${params.toString()}`
+  }
 
   const isFeatured = variant === 'featured'
 
@@ -148,11 +183,8 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
         className={cn(
           'group overflow-hidden transition-all duration-500',
           'glass-luxury-card border-gold/10',
-          'hover:border-gold/30 hover:shadow-gold',
-          isHovered ? '-translate-x-1' : ''
+          'hover:border-gold/30 hover:shadow-gold'
         )}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         <Link href={`/vehicles/${vehicle.id}`}>
           <div className="flex">
@@ -171,6 +203,9 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
                     src={vehicle.imageUrl}
                     alt={vehicle.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={priority}
+                    unoptimized={vehicle.imageUrl.startsWith('http')}
                     className={cn(
                       'object-cover transition-transform duration-700',
                       'group-hover:scale-110'
@@ -220,7 +255,7 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Fuel className="h-3.5 w-3.5 text-gold/70" />
-                    <span>Premium</span>
+                    <span>{vehicle.fuelType || 'Diesel'}</span>
                   </div>
                 </div>
               </div>
@@ -228,17 +263,30 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
               {/* Footer */}
               <div className="flex items-center justify-between mt-3">
                 <div>
-                  <span className="text-2xl font-display font-bold text-gradient-gold">
-                    Rs. {vehicle.basePrice.toLocaleString()}
-                  </span>
-                  <span className="text-xs text-warm-white-dark/60 ml-1">/km</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-display font-bold text-gradient-gold">
+                      Rs. {vehicle.basePrice.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-warm-white-dark/60">/km</span>
+                  </div>
+                  {(vehicle as any).pricePerDay && (
+                    <>
+                      <span className="text-xs text-warm-white-dark/40">or</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-lg font-display font-bold text-warm-white">
+                          Rs. {(vehicle as any).pricePerDay.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-warm-white-dark/60">/day</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <Button
                   size="sm"
                   className="h-9 px-4 bg-gradient-to-r from-gold to-gold-light text-black hover:from-gold-light hover:to-gold font-semibold rounded-lg shadow-gold shimmer-gold"
                   onClick={(e) => {
                     e.preventDefault()
-                    window.location.href = `/vehicles/${vehicle.id}?book=true`
+                    window.location.href = buildBookingUrl()
                   }}
                 >
                   Book Now
@@ -258,11 +306,8 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
         'group overflow-hidden transition-all duration-500',
         'glass-luxury-card border-gold/10',
         'hover:border-gold/30 hover:shadow-gold-lg',
-        isHovered ? '-translate-y-2' : '',
         isFeatured ? 'md:col-span-2 lg:col-span-1' : ''
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <Link href={`/vehicles/${vehicle.id}`}>
         <div className="relative h-64 overflow-hidden bg-black">
@@ -279,6 +324,8 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
                 src={vehicle.imageUrl}
                 alt={vehicle.name}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={priority}
                 className={cn(
                   'object-cover transition-transform duration-700',
                   'group-hover:scale-110'
@@ -305,40 +352,9 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
             </Badge>
           </div>
 
-          {/* Top Right - Actions */}
-          <div className="absolute top-5 right-5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9 bg-black/60 backdrop-blur-sm hover:bg-black/80 rounded-full shadow-gold border border-gold/20"
-              onClick={(e) => {
-                e.preventDefault()
-                setIsFavorited(!isFavorited)
-              }}
-            >
-              <Heart
-                className={cn(
-                  'h-4 w-4 transition-colors',
-                  isFavorited ? 'fill-gold text-gold' : 'text-warm-white-dark/70'
-                )}
-              />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9 bg-black/60 backdrop-blur-sm hover:bg-black/80 rounded-full shadow-gold border border-gold/20"
-              onClick={(e) => {
-                e.preventDefault()
-                // Share functionality
-              }}
-            >
-              <Share2 className="h-4 w-4 text-warm-white-dark/70" />
-            </Button>
-          </div>
-
           {/* Rating Badge */}
           {vehicle.rating && (
-            <div className="absolute bottom-5 left-5 bg-black/70 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-gold border border-gold/20 transform translate-y-12 group-hover:translate-y-0 transition-transform duration-500">
+            <div className="absolute bottom-5 left-5 bg-black/70 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-gold border border-gold/20">
               <Star className="h-4 w-4 fill-gold text-gold" />
               <span className="text-sm font-bold text-warm-white">{vehicle.rating.toFixed(1)}</span>
               {vehicle.reviewCount > 0 && (
@@ -354,21 +370,6 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
               Featured
             </Badge>
           )}
-
-          {/* Quick View Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/40 backdrop-blur-sm">
-            <Button
-              size="lg"
-              className="bg-gold/90 backdrop-blur-md hover:bg-gold text-black font-display font-semibold rounded-2xl shadow-gold-lg border border-gold/40 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500"
-              onClick={(e) => {
-                e.preventDefault()
-                onViewDetails?.()
-              }}
-            >
-              Quick View
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
         </div>
       </Link>
 
@@ -393,16 +394,12 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
           </div>
           <div className="flex items-center gap-2 text-warm-white-dark/60">
             <Fuel className="h-4 w-4 text-gold/70" />
-            <span className="font-medium">Premium</span>
-          </div>
-          <div className="flex items-center gap-2 text-warm-white-dark/60">
-            <Gauge className="h-4 w-4 text-gold/70" />
-            <span className="font-medium">Auto</span>
+            <span className="font-medium">{vehicle.fuelType || 'Diesel'}</span>
           </div>
         </div>
 
         {/* Amenities */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {displayAmenities.map((amenity) => (
             <div
               key={amenity}
@@ -423,18 +420,22 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
         </div>
 
         {/* Pricing */}
-        <div className="flex items-baseline gap-2 pt-4 border-t border-gold/10">
-          <span className="text-3xl font-display font-bold text-gradient-gold">
-            Rs. {vehicle.basePrice.toLocaleString()}
-          </span>
-          <span className="text-sm text-warm-white-dark/60">/km</span>
+        <div className="flex flex-col gap-1 pt-4 border-t border-gold/10">
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-display font-bold text-gradient-gold">
+              Rs. {vehicle.basePrice.toLocaleString()}
+            </span>
+            <span className="text-sm text-warm-white-dark/60">/km</span>
+          </div>
           {(vehicle as any).pricePerDay && (
             <>
-              <span className="text-sm text-warm-white-dark/40 mx-2">or</span>
-              <span className="text-2xl font-display font-bold text-warm-white">
-                Rs. {(vehicle as any).pricePerDay.toLocaleString()}
-              </span>
-              <span className="text-sm text-warm-white-dark/60">/day</span>
+              <span className="text-xs text-warm-white-dark/40">or</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-display font-bold text-warm-white">
+                  Rs. {(vehicle as any).pricePerDay.toLocaleString()}
+                </span>
+                <span className="text-sm text-warm-white-dark/60">/day</span>
+              </div>
             </>
           )}
         </div>
@@ -463,7 +464,16 @@ export function VehicleCard({ vehicle, onViewDetails, variant = 'default' }: Veh
             'shadow-gold hover:shadow-gold-lg',
             'transition-all duration-300 shimmer-gold'
           )}
-          onClick={() => (window.location.href = `/vehicles/${vehicle.id}?book=true`)}
+          onClick={() => {
+            console.log('Book Now clicked, vehicle:', vehicle)
+            console.log('vehicle.id:', vehicle.id)
+            if (!vehicle.id) {
+              console.error('Vehicle ID is missing!')
+              alert('Error: Vehicle ID is missing. Please try again.')
+              return
+            }
+            window.location.href = buildBookingUrl()
+          }}
         >
           Book Now
           <ArrowRight className="ml-2 h-4 w-4" />

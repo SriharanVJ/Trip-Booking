@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
 import type { VehicleFilterParams, VehicleType, VehicleAmenity } from '@/types'
 
 interface VehicleFilterProps {
@@ -69,12 +68,7 @@ export function VehicleFilter({
     vehicleType: true,
     seating: true,
     amenities: false,
-    priceRange: false,
   })
-  const [priceRange, setPriceRange] = useState<number[]>([
-    filters.priceMin || 0,
-    filters.priceMax || 100,
-  ])
 
   const handleSeatingChange = (
     capacity: number,
@@ -118,29 +112,16 @@ export function VehicleFilter({
     onFilterChange(updatedFilters)
   }
 
-  const handlePriceRangeChange = (values: number[]) => {
-    setPriceRange(values)
-    const updatedFilters = {
-      ...filters,
-      priceMin: values[0] > 0 ? values[0] : undefined,
-      priceMax: values[1] < 100 ? values[1] : undefined,
-    }
-    setFilters(updatedFilters)
-    onFilterChange(updatedFilters)
-  }
-
   const handleClearFilters = () => {
     const clearedFilters: VehicleFilterParams = {}
     setFilters(clearedFilters)
-    setPriceRange([0, 100])
     onFilterChange(clearedFilters)
   }
 
   const activeFilterCount =
     (filters.seatingCapacity?.length || 0) +
     (filters.vehicleTypes?.length || 0) +
-    (filters.amenities?.length || 0) +
-    ((filters.priceMin !== undefined || filters.priceMax !== undefined) ? 1 : 0)
+    (filters.amenities?.length || 0)
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))
@@ -319,30 +300,6 @@ export function VehicleFilter({
             </div>
           </FilterSection>
 
-          {/* Price Range Filter */}
-          <FilterSection
-            title="Price Range"
-            icon={<Sparkles className="h-5 w-5" />}
-            isOpen={openSections.priceRange}
-            onToggle={() => toggleSection('priceRange')}
-          >
-            <div className="space-y-6">
-              <div className="px-2">
-                <Slider
-                  value={priceRange}
-                  onValueChange={handlePriceRangeChange}
-                  max={100}
-                  step={5}
-                  className="my-4"
-                />
-                <div className="flex items-center justify-between text-sm font-medium text-warm-white-dark/60">
-                  <span>Rs. {priceRange[0] * 10}/km</span>
-                  <span>Rs. {priceRange[1] * 10}/km</span>
-                </div>
-              </div>
-            </div>
-          </FilterSection>
-
           {/* Amenities Filter */}
           <FilterSection
             title="Premium Amenities"
@@ -385,22 +342,8 @@ export function VehicleFilter({
           </FilterSection>
         </div>
       </div>
-
-      {/* Filter Stats - Desktop Only */}
-      <div className="hidden lg:block mt-6 glass-luxury-card rounded-2xl p-5 border-gold/10">
-        <div className="text-center">
-          <p className="text-xs text-warm-white-dark/60 mb-2 tracking-wide uppercase">Premium Fleet</p>
-          <div className="text-3xl font-display font-bold text-gradient-gold mb-1">
-            {activeFilterCount > 0 ? filteredVehicles.length : '500+'}
-          </div>
-          <p className="text-sm text-warm-white-dark/60">vehicles available</p>
-        </div>
-      </div>
     </>
   )
 }
 
 import { Users, Star } from 'lucide-react'
-
-// This would be passed as a prop or imported from a parent component in a real implementation
-const filteredVehicles = { length: 48 }

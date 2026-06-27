@@ -52,14 +52,25 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
     ? { id: 'origin', name: originCity, city: originCity, state: 'Tamil Nadu', pincode: '' }
     : null
 
+  // Default pickup location to Tirupur if not provided
+  const defaultPickupLocation: Location = {
+    id: 'default-pickup',
+    name: 'Tirupur, Tamil Nadu, India',
+    city: 'Tirupur',
+    state: 'Tamil Nadu',
+    pincode: '641604',
+    latitude: 11.1085,
+    longitude: 77.3416
+  }
+
   const [pickupLocation, setPickupLocation] = useState<Location | null>(
-    initialData?.pickupLocation || pickupLocationFromSearch
+    initialData?.pickupLocation || pickupLocationFromSearch || defaultPickupLocation
   )
   const [dropLocation, setDropLocation] = useState<Location | null>(initialData?.dropLocation || null)
 
-  // Parse date from search params (format: YYYY-MM-DD)
+  // Parse date from search params (format: YYYY-MM-DD), default to today
   const dateFromSearch = searchParams?.date
-  const pickupDateFromSearch = dateFromSearch ? new Date(dateFromSearch) : undefined
+  const pickupDateFromSearch = dateFromSearch ? new Date(dateFromSearch) : new Date()
 
   const [pickupDate, setPickupDate] = useState<Date | undefined>(
     initialData?.pickupDate ? new Date(initialData.pickupDate) : pickupDateFromSearch
@@ -74,7 +85,6 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
   const [pickupTime, setPickupTime] = useState<string>(initialData?.pickupTime || '09:00')
   const [returnDate, setReturnDate] = useState<Date | undefined>(initialData?.returnDate ? new Date(initialData.returnDate) : undefined)
   const [returnTime, setReturnTime] = useState<string>(initialData?.returnTime || '18:00')
-  const [passengerCount, setPassengerCount] = useState<number>(initialData?.passengerCount || 1)
   const [multiCityStops, setMultiCityStops] = useState<MultiCityStop[]>(initialData?.multiCityStops || [])
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
@@ -121,7 +131,7 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
   const handleValidate = () => {
     const newErrors: { [key: string]: string } = {}
 
-    // Pickup location is pre-filled from search, no validation needed
+    if (!pickupLocation) newErrors.pickupLocation = 'Pickup location is required'
     if (!dropLocation) newErrors.dropLocation = 'Drop location is required'
     if (!pickupDate) newErrors.pickupDate = 'Pickup date is required'
     if (!pickupTime) newErrors.pickupTime = 'Pickup time is required'
@@ -193,8 +203,8 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
   }
 
   const isFormValid = () => {
-    return pickupLocation && dropLocation && pickupDate && pickupTime &&
-           (tripType !== 'round-trip' || (returnDate && returnTime)) &&
+    return !!pickupLocation && !!dropLocation && !!pickupDate && !!pickupTime &&
+           (tripType !== 'round-trip' || (!!returnDate && !!returnTime)) &&
            (tripType !== 'multi-city' || multiCityStops.length > 0) &&
            passengerCount > 0 && passengerCount <= vehicle.seatingCapacity
   }
@@ -258,47 +268,32 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Pickup Location - Read-only from search */}
-          {pickupLocation && (
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Pickup Location
-              </Label>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="font-medium">{pickupLocation.name}</span>
-                <Badge variant="secondary" className="ml-auto">From Search</Badge>
-              </div>
-            </div>
-          )}
-
-          {/* Drop Location */}
+          {/* Pickup Location */}
           <div className="space-y-2">
-            <Label htmlFor="drop" className="flex items-center gap-2">
+            <Label htmlFor="pickup" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Drop Location <span className="text-destructive">*</span>
+              Pickup Location <span className="text-destructive">*</span>
             </Label>
             <Select
-              value={dropLocation?.id}
+              value={pickupLocation?.id}
               onValueChange={(value) => {
                 const location = SAMPLE_LOCATIONS.find(l => l.id === value)
-                setDropLocation(location || null)
-                delete errors.dropLocation
+                setPickupLocation(location || null)
+                delete errors.pickupLocation
               }}
             >
-              <SelectTrigger className={cn(errors.dropLocation && 'border-destructive')}>
-                <SelectValue placeholder="Select drop location" />
+              <SelectTrigger className={cn((errors as any).pickupLocation && 'border-destructive')}>
+                <SelectValue placeholder="Select pickup location" />
               </SelectTrigger>
               <SelectContent>
-                {SAMPLE_LOCATIONS.filter(l => l.id !== pickupLocation?.id).map((location) => (
+                {SAMPLE_LOCATIONS.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
                     {location.name}, {location.city}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.dropLocation && <p className="text-sm text-destructive">{errors.dropLocation}</p>}
+            {(errors as any).pickupLocation && <p className="text-sm text-destructive">{(errors as any).pickupLocation}</p>}
           </div>
 
           {/* Drop Location */}
@@ -316,7 +311,7 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
               }}
             >
               <SelectTrigger className={cn(errors.dropLocation && 'border-destructive')}>
-                <SelectValue placeholder="Select drop location" />
+                <SelectValue placeholder="Select destination city (any city)" />
               </SelectTrigger>
               <SelectContent>
                 {SAMPLE_LOCATIONS.filter(l => l.id !== pickupLocation?.id).map((location) => (
@@ -439,7 +434,7 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
                   <CalendarComponent
                     mode="single"
                     selected={pickupDate}
-                    onSelect={(date) => {
+                    onSelect={(date: any) => {
                       setPickupDate(date)
                       delete errors.pickupDate
                     }}
@@ -500,7 +495,7 @@ export function TripDetails({ vehicle, onNext, initialData, searchParams }: Trip
                       <CalendarComponent
                         mode="single"
                         selected={returnDate}
-                        onSelect={(date) => {
+                        onSelect={(date: any) => {
                           setReturnDate(date)
                           delete errors.returnDate
                         }}

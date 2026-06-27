@@ -97,8 +97,8 @@ function Calendar({
       return
     }
 
-    if (mode === 'range' && typeof selected === 'object') {
-      const { from, to } = selected
+    if (mode === 'range' && typeof selected === 'object' && !Array.isArray(selected)) {
+      const { from, to } = selected as { from?: Date; to?: Date }
 
       if (!from || (from && to)) {
         // Start new range

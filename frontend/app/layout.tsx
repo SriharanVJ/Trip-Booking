@@ -18,7 +18,7 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
   display: 'swap',
   preload: false, // Only load when needed
-  adjustFontFallback: 'Arial',
+  adjustFontFallback: false,
 })
 
 export const metadata: Metadata = {

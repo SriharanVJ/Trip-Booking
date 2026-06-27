@@ -1,50 +1,23 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { BookingForm } from '@/components/booking/BookingForm'
-import { TripSummarySidebar } from '@/components/booking/TripSummarySidebar'
-import { getVehicleById } from '@/lib/api'
+import { BookingPageClient } from './BookingPageClient'
 
 interface BookingPageProps {
-  params: {
+  params: Promise<{
     vehicleId: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: BookingPageProps): Promise<Metadata> {
-  const vehicle = await getVehicleById(params.vehicleId)
-
-  if (!vehicle) {
-    return {
-      title: 'Vehicle Not Found'
-    }
-  }
+  const { vehicleId } = await params
 
   return {
-    title: `Book ${vehicle.name} - Trip Booking`,
-    description: `Book ${vehicle.name} for your journey. ${vehicle.description}`
+    title: 'Book Your Trip - Bus Booking',
+    description: 'Complete your booking for your selected vehicle'
   }
 }
 
 export default async function BookingPage({ params }: BookingPageProps) {
-  const vehicle = await getVehicleById(params.vehicleId)
+  const { vehicleId } = await params
 
-  if (!vehicle) {
-    notFound()
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Booking Form */}
-        <div className="lg:col-span-2">
-          <BookingForm vehicle={vehicle} />
-        </div>
-
-        {/* Trip Summary Sidebar */}
-        <div className="lg:col-span-1">
-          <TripSummarySidebar vehicle={vehicle} />
-        </div>
-      </div>
-    </div>
-  )
+  return <BookingPageClient vehicleId={vehicleId} />
 }

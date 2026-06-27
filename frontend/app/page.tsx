@@ -53,7 +53,7 @@ export default function HomePage() {
   const features = [
     {
       icon: Crown,
-      title: 'Luxury Fleet',
+      title: 'Luxury Vehicles',
       description: 'Premium vehicles with gold-standard comfort and sophistication',
       color: 'text-gold',
       gradient: 'from-gold/20 to-gold/5',
@@ -78,7 +78,7 @@ export default function HomePage() {
     {
       icon: Gem,
       title: 'Exclusive Access',
-      description: 'Curated experiences and priority bookings for members',
+      description: 'Curated journeys and priority bookings for members',
       color: 'text-purple-400',
       gradient: 'from-purple-500/20 to-purple-500/5',
       borderColor: 'border-purple-500/30',
@@ -87,7 +87,7 @@ export default function HomePage() {
 
   const testimonials = [
     {
-      text: 'An absolutely exceptional experience. The vehicle was immaculate and the service was impeccable.',
+      text: 'An absolutely exceptional journey. The vehicle was immaculate and the service was impeccable.',
       author: 'Vikram R.',
       role: 'Business Executive',
       rating: 5,
@@ -144,7 +144,7 @@ export default function HomePage() {
             <div className="flex justify-center mb-10">
               <Badge className="glass-luxury px-6 py-2.5 text-sm font-medium border-gold text-gold shadow-gold-lg animate-fade-in-luxury">
                 <Crown className="w-4 h-4 mr-2 animate-gold-pulse" />
-                Premium Travel Experience
+                Premium Travel Journey
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Badge>
             </div>
@@ -157,7 +157,7 @@ export default function HomePage() {
                 <span className="text-gradient-gold animate-shimmer-gold">Our Legacy</span>
               </h1>
               <p className="text-xl md:text-2xl text-warm-white-dark/80 mb-6 max-w-3xl mx-auto leading-relaxed font-light">
-                Experience Tamil Nadu through the lens of luxury with our curated premium fleet
+                Discover Tamil Nadu through the lens of luxury with our curated premium vehicles
               </p>
               <p className="text-lg text-warm-white-dark/60 max-w-2xl mx-auto font-light">
                 From intimate sedan transfers to majestic luxury coaches, we craft journeys that transcend ordinary travel
@@ -199,51 +199,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 md:py-32 border-t border-gold/10">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 glass-luxury border-gold text-gold">
-              <Sparkles className="w-4 h-4 mr-1" />
-              Why Choose AJ Holidays
-            </Badge>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-warm-white mb-6">
-              The Gold Standard
-            </h2>
-            <p className="text-xl text-warm-white-dark/60 max-w-2xl mx-auto">
-              Every detail meticulously crafted for the most discerning travelers
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <div
-                  key={feature.title}
-                  className="group"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="glass-luxury-card rounded-3xl p-8 border-gold/10 hover:border-gold/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-gold/20">
-                    <div
-                      className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} border ${feature.borderColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <Icon className={`w-8 h-8 ${feature.color}`} />
-                    </div>
-                    <h3 className="font-display text-xl font-bold text-warm-white mb-3 group-hover:text-gold transition-colors">
-                      {feature.title}
-                    </h3>
-                    <p className="text-warm-white-dark/60 leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Popular Routes - Now loaded dynamically */}
       <section className="py-24 md:py-32 border-t border-gold/10">
         <div className="container mx-auto px-4">
@@ -271,47 +226,6 @@ export default function HomePage() {
           </div>
 
           <FeaturedRoutes />
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-24 md:py-32 border-t border-gold/10 bg-gradient-to-b from-black via-charcoal-dark/50 to-black">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 glass-luxury border-gold text-gold">
-              <Star className="w-4 h-4 mr-1" />
-              Reviews
-            </Badge>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-warm-white mb-6">
-              Distinguished Guests Speak
-            </h2>
-            <p className="text-xl text-warm-white-dark/60 max-w-2xl mx-auto">
-              Experiences that define our commitment to excellence
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="glass-luxury-card rounded-3xl p-8 border-gold/10 hover:border-gold/20 transition-all duration-500 hover:-translate-y-2"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-gold text-gold" />
-                  ))}
-                </div>
-                <p className="text-warm-white-dark/80 mb-6 leading-relaxed italic">
-                  "{testimonial.text}"
-                </p>
-                <div>
-                  <div className="font-semibold text-warm-white">{testimonial.author}</div>
-                  <div className="text-sm text-warm-white-dark/60">{testimonial.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -350,7 +264,7 @@ export default function HomePage() {
             Begin Your Luxury Journey
           </h2>
           <p className="text-xl text-warm-white-dark/70 mb-10 max-w-2xl mx-auto">
-            Join our exclusive membership for priority bookings, special rates, and curated experiences
+            Join our exclusive membership for priority bookings, special rates, and curated journeys
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Button
@@ -358,7 +272,7 @@ export default function HomePage() {
               className="h-14 px-8 bg-gradient-to-r from-gold to-gold-light text-black hover:from-gold-light hover:to-gold font-display font-semibold rounded-xl shadow-gold-lg shimmer-gold"
               onClick={() => (window.location.href = '/vehicles')}
             >
-              Explore Fleet
+              Explore Vehicles
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button

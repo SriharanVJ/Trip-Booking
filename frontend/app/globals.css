@@ -645,3 +645,76 @@ button:focus {
   outline-style: solid !important;
   outline-width: 2px !important;
 }
+
+/* Autofill styling - keeps dark background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
+  -webkit-text-fill-color: #f5f5f5 !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #f5f5f5;
+}
+
+input:-moz-autofill,
+input:-moz-autofill:hover,
+input:-moz-autofill:focus,
+textarea:-moz-autofill,
+textarea:-moz-autofill:hover,
+textarea:-moz-autofill:focus {
+  box-shadow: 0 0 0 30px #1a1a1a inset !important;
+  -moz-text-fill-color: #f5f5f5 !important;
+  color: #f5f5f5 !important;
+}
+
+/* Ensure input text and caret colors are white in all states */
+input,
+textarea,
+select {
+  caret-color: #f5f5f5 !important;
+}
+
+input::selection,
+textarea::selection {
+  background-color: rgba(212, 175, 55, 0.3) !important;
+  color: #f5f5f5 !important;
+}
+
+/* Checkbox dark mode styling */
+[data-radix-checkbox][data-state="unchecked"] {
+  background-color: #1a1a1a !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+[data-radix-checkbox][data-state="checked"] {
+  background-color: rgba(212, 175, 55, 0.9) !important;
+  border-color: #d4af37 !important;
+}
+
+[data-radix-checkbox]:hover {
+  border-color: rgba(212, 175, 55, 0.6) !important;
+}
+
+[data-radix-checkbox]:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+/* Button disabled state - make it more visible */
+button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  background-color: #333 !important;
+  color: #888 !important;
+  border-color: #444 !important;
+}
+
+/* Ensure button text is visible in all states */
+button:not(:disabled) {
+  color: inherit !important;
+}

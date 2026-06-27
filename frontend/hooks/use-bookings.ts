@@ -14,7 +14,7 @@ export function useBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true)
-      const response = await bookingApi.getUserBookings()
+      const response = await bookingApi.getBookings()
       setBookings(response.data)
     } catch (err) {
       setError('Failed to fetch bookings')

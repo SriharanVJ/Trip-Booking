@@ -8,12 +8,14 @@ import { VehicleFilter } from '@/components/vehicle/VehicleFilter'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Vehicle, VehicleFilterParams } from '@/types'
+import { vehicleApi } from '@/lib/api'
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [activeFilters, setActiveFilters] = useState<VehicleFilterParams>({})
 
   const origin = searchParams.get('origin') || ''
@@ -22,247 +24,94 @@ export default function SearchPage() {
   const passengers = searchParams.get('passengers') || '1'
 
   useEffect(() => {
-    setLoading(true)
-    setTimeout(() => {
-      const allVehicles = [
-        {
-          id: '1',
-          name: 'Toyota Innova Crysta',
-          type: 'car',
-          make: 'Toyota',
-          model: 'Innova Crysta',
-          year: 2023,
-          seatingCapacity: 7,
-          amenities: ['ac', 'wifi', 'music-system', 'gps'],
-          imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800',
-          images: [],
-          rating: 4.8,
-          reviewCount: 156,
-          basePrice: 15,
-          priceUnit: 'per-km',
-          pricePerDay: 4000,
-          minCharge: 1500,
-          driverCharges: 500,
-          features: ['Spacious interior', 'Comfortable seating', 'Pushback seats'],
-          description: 'Premium 7-seater MPV perfect for family trips and outstation travel.',
-          specifications: {
-            engine: '2.4L Diesel',
-            fuelType: 'diesel',
-            transmission: 'automatic',
-            mileage: '12 kmpl',
-            luggageCapacity: '4 bags',
-          },
-          available: true,
-        },
-        {
-          id: '2',
-          name: 'Toyota Fortuner',
-          type: 'car',
-          make: 'Toyota',
-          model: 'Fortuner',
-          year: 2023,
-          seatingCapacity: 7,
-          amenities: ['ac', 'wifi', 'gps', 'first-aid-kit'],
-          imageUrl: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800',
-          images: [],
-          rating: 4.9,
-          reviewCount: 203,
-          basePrice: 18,
-          priceUnit: 'per-km',
-          pricePerDay: 5000,
-          minCharge: 2000,
-          driverCharges: 600,
-          features: ['Premium SUV experience', 'Off-road capability', 'Luxury interior'],
-          description: 'Powerful and comfortable SUV for long journeys and adventure trips.',
-          specifications: {
-            engine: '2.8L Diesel',
-            fuelType: 'diesel',
-            transmission: 'automatic',
-            mileage: '10 kmpl',
-            luggageCapacity: '5 bags',
-          },
-          available: true,
-        },
-        {
-          id: '3',
-          name: 'Force Traveller 3350',
-          type: 'traveller',
-          make: 'Force',
-          model: 'Traveller 3350',
-          year: 2022,
-          seatingCapacity: 14,
-          amenities: ['ac', 'music-system', 'first-aid-kit'],
-          imageUrl: 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=800',
-          images: [],
-          rating: 4.5,
-          reviewCount: 89,
-          basePrice: 16,
-          priceUnit: 'per-km',
-          pricePerDay: 4500,
-          minCharge: 2500,
-          driverCharges: 700,
-          features: ['Spacious seating', 'Good legroom', 'Large luggage space'],
-          description: 'Reliable tempo traveller perfect for group tours and family outings.',
-          specifications: {
-            engine: '2.6L Diesel',
-            fuelType: 'diesel',
-            transmission: 'manual',
-            mileage: '10 kmpl',
-            luggageCapacity: '10 bags',
-          },
-          available: true,
-        },
-        {
-          id: '4',
-          name: 'Mercedes Benz Sprinter',
-          type: 'traveller',
-          make: 'Mercedes',
-          model: 'Sprinter',
-          year: 2023,
-          seatingCapacity: 14,
-          amenities: ['ac', 'wifi', 'charging-point', 'tv', 'music-system'],
-          imageUrl: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800',
-          images: [],
-          rating: 4.9,
-          reviewCount: 67,
-          basePrice: 25,
-          priceUnit: 'per-km',
-          pricePerDay: 7000,
-          minCharge: 4000,
-          driverCharges: 1000,
-          features: ['Luxury interiors', 'Recliner seats', 'Premium audio'],
-          description: 'Premium luxury traveller for corporate groups and VIP travel.',
-          specifications: {
-            engine: '2.1L Diesel',
-            fuelType: 'diesel',
-            transmission: 'automatic',
-            mileage: '12 kmpl',
-            luggageCapacity: '12 bags',
-          },
-          available: true,
-        },
-        {
-          id: '5',
-          name: 'Tata Luxury Coach',
-          type: 'coach',
-          make: 'Tata',
-          model: 'Luxura',
-          year: 2022,
-          seatingCapacity: 24,
-          amenities: ['ac', 'wifi', 'charging-point', 'tv', 'water-bottle', 'blanket'],
-          imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
-          images: [],
-          rating: 4.6,
-          reviewCount: 112,
-          basePrice: 22,
-          priceUnit: 'per-km',
-          pricePerDay: 6500,
-          minCharge: 3500,
-          driverCharges: 800,
-          features: ['Pushback seats', 'Reading lights', 'AC vents'],
-          description: 'Comfortable luxury coach for medium-sized groups and special occasions.',
-          specifications: {
-            engine: '6.7L Diesel',
-            fuelType: 'diesel',
-            transmission: 'automatic',
-            mileage: '6 kmpl',
-            luggageCapacity: '30 bags',
-          },
-          available: true,
-        },
-        {
-          id: '6',
-          name: 'Volvo 9400XL Multi-Axle',
-          type: 'bus',
-          make: 'Volvo',
-          model: '9400XL',
-          year: 2023,
-          seatingCapacity: 52,
-          amenities: ['ac', 'wifi', 'charging-point', 'tv', 'toilet', 'water-bottle', 'blanket'],
-          imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
-          images: [],
-          rating: 4.8,
-          reviewCount: 234,
-          basePrice: 28,
-          priceUnit: 'per-km',
-          pricePerDay: 9000,
-          minCharge: 5000,
-          driverCharges: 1500,
-          features: ['Pushback seats', 'Personal TV', 'USB charging', 'Reading lights'],
-          description: 'Premium multi-axle Volvo coach with luxury amenities for long journeys.',
-          specifications: {
-            engine: 'D13C',
-            fuelType: 'diesel',
-            transmission: 'automatic',
-            mileage: '5 kmpl',
-            luggageCapacity: '50 bags',
-          },
-          available: true,
-        },
-        {
-          id: '7',
-          name: 'Scania Metrolink',
-          type: 'bus',
-          make: 'Scania',
-          model: 'Metrolink',
-          year: 2023,
-          seatingCapacity: 45,
-          amenities: ['ac', 'wifi', 'charging-point', 'tv', 'toilet'],
-          imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800',
-          images: [],
-          rating: 4.9,
-          reviewCount: 178,
-          basePrice: 30,
-          priceUnit: 'per-km',
-          pricePerDay: 10000,
-          minCharge: 5500,
-          driverCharges: 1500,
-          features: ['Recliner seats', 'Personal TV', 'Ambient lighting'],
-          description: 'Premium business class coach with executive features for corporate travel.',
-          specifications: {
-            engine: 'DC13',
-            fuelType: 'diesel',
-            transmission: 'automatic',
-            mileage: '5 kmpl',
-            luggageCapacity: '45 bags',
-          },
-          available: true,
-        },
-        {
-          id: '8',
-          name: 'Honda City',
-          type: 'car',
-          make: 'Honda',
-          model: 'City',
-          year: 2023,
-          seatingCapacity: 5,
-          amenities: ['ac', 'music-system', 'gps'],
-          imageUrl: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=800',
-          images: [],
-          rating: 4.7,
-          reviewCount: 145,
-          basePrice: 12,
-          priceUnit: 'per-km',
-          pricePerDay: 3000,
-          minCharge: 1200,
-          driverCharges: 400,
-          features: ['Comfortable sedan', 'Good mileage', 'Smooth ride'],
-          description: 'Comfortable sedan perfect for small groups and city travel.',
-          specifications: {
-            engine: '1.5L Petrol',
-            fuelType: 'petrol',
-            transmission: 'manual',
-            mileage: '15 kmpl',
-            luggageCapacity: '2 bags',
-          },
-          available: true,
-        },
-      ]
-      setVehicles(allVehicles)
-      setFilteredVehicles(allVehicles)
-      setLoading(false)
-    }, 1000)
-  }, [origin, destination, date, passengers])
+    const loadVehicles = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        console.log('Loading vehicles from API...')
+        // Fetch vehicles from API
+        const response = await vehicleApi.getVehicles()
+        console.log('Vehicles API response:', response.data)
+
+        // Transform amenities from backend format to frontend format
+        const transformAmenities = (apiAmenities: string[]) => {
+          const amenityMap: Record<string, string> = {
+            'AC': 'ac',
+            'WIFI': 'wifi',
+            'USB_CHARGING': 'charging-point',
+            'TV': 'tv',
+            'TOILET': 'toilet',
+            'WATER_BOTTLE': 'water-bottle',
+            'WATER_BOTTLES': 'water-bottle',
+            'BLANKET': 'blanket',
+            'BLANKETS': 'blanket',
+            'PILLOWS': 'blanket',
+            'MEAL': 'meal',
+            'SNACKS': 'meal',
+            'MUSIC_SYSTEM': 'music-system',
+            'FIRST_AID_KIT': 'first-aid-kit',
+            'FIRE_EXTINGUISHER': 'fire-extinguisher',
+            'GPS': 'gps',
+            'REAR_CAMERA': 'rear-camera',
+            'PUSHBACK_SEAT': 'pushback-seat',
+            'PUSHBACK_SEATS': 'pushback-seat',
+            'RECLINING_SEAT': 'reclining-seat',
+            'RECLINING_SEATS': 'reclining-seats',
+            'READING_LIGHTS': 'reading-light',
+            'READING_LIGHT': 'reading-light',
+            'LUGGAGE_SPACE': 'luggage-space',
+            'PASSENGER_DISPLAY': 'passenger-display',
+            'ENTERTAINMENT_SYSTEM': 'entertainment-system',
+            'MICROPHONE': 'microphone',
+            'REFRIGERATOR': 'refrigerator',
+          }
+          return apiAmenities.map(a => amenityMap[a] || a.toLowerCase().replace(/_/g, '-').replace(/ /g, '-'))
+        }
+
+        // Transform API response to match Vehicle type
+        const vehiclesData = response.data.map((v: any) => {
+          console.log('Processing vehicle:', v.id, v.name)
+          return {
+            id: v.id,
+            name: v.name,
+            type: v.type,
+            make: v.make,
+            model: v.model,
+            year: v.year,
+            seatingCapacity: v.seatingCapacity,
+            amenities: transformAmenities(v.amenities || []),
+            imageUrl: v.thumbnailImage || v.images?.[0] || '/images/placeholder-vehicle.jpg',
+            images: v.images || [],
+            rating: v.rating || 4.5,
+            reviewCount: v.reviewCount || 0,
+            basePrice: v.pricePerKm,
+            priceUnit: 'per-km',
+            minCharge: v.minimumCharge,
+            driverCharges: v.driverAllowancePerDay,
+            features: v.features?.features || [],
+            description: v.description || '',
+            specifications: v.specifications || {},
+            available: v.isAvailable !== false,
+            fuelType: v.fuelType || 'DIESEL',
+            pricePerDay: v.pricePerDay,
+          }
+        })
+
+        console.log('Transformed vehicles:', vehiclesData)
+        setVehicles(vehiclesData)
+        setFilteredVehicles(vehiclesData)
+      } catch (err) {
+        console.error('Failed to load vehicles:', err)
+        setError('Failed to load vehicles. Please try again later.')
+        setVehicles([])
+        setFilteredVehicles([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadVehicles()
+  }, [])
 
   const handleFilterChange = (filters: VehicleFilterParams) => {
     setActiveFilters(filters)
@@ -304,11 +153,11 @@ export default function SearchPage() {
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  {new Date(date).toLocaleDateString('en-US', {
+                  {date ? new Date(date).toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric'
-                  })}
+                  }) : 'Select date'}
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
@@ -358,8 +207,12 @@ export default function SearchPage() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredVehicles.map((vehicle) => (
-                  <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                {filteredVehicles.map((vehicle, index) => (
+                  <VehicleCard
+                    key={vehicle.id}
+                    vehicle={vehicle}
+                    priority={index < 6} // Priority for first 6 cards (above the fold)
+                  />
                 ))}
               </div>
             )}

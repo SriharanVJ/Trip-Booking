@@ -155,6 +155,9 @@ function ImageGallery({ images, vehicleName }: { images: string[]; vehicleName: 
           src={images[currentIndex]}
           alt={`${vehicleName} - View ${currentIndex + 1}`}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+          priority={currentIndex === 0} // Priority for first image
+          unoptimized={images[currentIndex].startsWith('http')}
           className="object-cover transition-transform duration-700 hover:scale-105"
         />
 
@@ -218,6 +221,8 @@ function ImageGallery({ images, vehicleName }: { images: string[]; vehicleName: 
                   src={image}
                   alt={`Thumbnail ${index + 1}`}
                   fill
+                  sizes="112px"
+                  unoptimized={image.startsWith('http')}
                   className="object-cover"
                 />
                 {index === currentIndex && (
@@ -331,11 +336,19 @@ function PricingBreakdown({ vehicle }: { vehicle: Vehicle }) {
       </CardHeader>
       <CardContent className="pt-6 space-y-4">
         <div className="flex justify-between items-center py-2">
-          <span className="text-warm-white-dark/60">Base Rate</span>
+          <span className="text-warm-white-dark/60">Per Kilometer</span>
           <span className="font-semibold text-warm-white">
-            Rs. {vehicle.basePrice} /{vehicle.priceUnit === 'per-km' ? 'km' : vehicle.priceUnit === 'per-day' ? 'day' : 'trip'}
+            Rs. {vehicle.basePrice} /km
           </span>
         </div>
+        {(vehicle as any).pricePerDay && (
+          <div className="flex justify-between items-center py-2">
+            <span className="text-warm-white-dark/60">Per Day</span>
+            <span className="font-semibold text-warm-white">
+              Rs. {(vehicle as any).pricePerDay.toLocaleString()} /day
+            </span>
+          </div>
+        )}
         <div className="flex justify-between items-center py-2">
           <span className="text-warm-white-dark/60">Minimum Charge</span>
           <span className="font-semibold text-warm-white">Rs. {vehicle.minCharge}</span>
@@ -352,7 +365,7 @@ function PricingBreakdown({ vehicle }: { vehicle: Vehicle }) {
           </span>
         </div>
         <p className="text-xs text-warm-white-dark/50 leading-relaxed">
-          * Final pricing may vary based on distance, duration, and additional premium services
+          * Choose per-km for distance-based pricing or per-day for full-day rentals
         </p>
       </CardContent>
     </Card>

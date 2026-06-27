@@ -7,11 +7,24 @@ const nextConfig = {
 
   // Optimize images
   images: {
-    domains: ['localhost', 'images.unsplash.com'],
+    domains: ['localhost', 'images.unsplash.com', 'raw.githubusercontent.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        pathname: '/SriharanVJ/Trip-Booking/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.githubusercontent.com',
+      },
+    ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
+    // Use unoptimized for external images to avoid loader issues
+    unoptimized: false,
   },
 
   // Production optimizations

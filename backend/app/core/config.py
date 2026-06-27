@@ -22,7 +22,12 @@ class Settings(BaseSettings):
     TEST_DATABASE_URL: str = ""
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+    ]
 
     # Environment
     ENVIRONMENT: str = "development"

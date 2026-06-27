@@ -114,13 +114,13 @@ async def list_vehicles(
         filtered = []
         for vehicle in vehicles:
             # Filter by capacity
-            if min_capacity and vehicle.seating_capacity < min_capacity:
+            if min_capacity and vehicle.seatingCapacity < min_capacity:
                 continue
-            if max_capacity and vehicle.seating_capacity > max_capacity:
+            if max_capacity and vehicle.seatingCapacity > max_capacity:
                 continue
 
             # Filter by price
-            vehicle_price = float(vehicle.price_per_km)
+            vehicle_price = float(vehicle.pricePerKm)
             if min_price and vehicle_price < min_price:
                 continue
             if max_price and vehicle_price > max_price:
@@ -135,28 +135,29 @@ async def list_vehicles(
 
             filtered.append({
                 "id": vehicle.id,
-                "registrationNumber": vehicle.registration_number,
+                "registrationNumber": vehicle.registrationNumber,
                 "name": vehicle.name,
                 "type": vehicle.type.value,
-                "seatingCapacity": vehicle.seating_capacity,
-                "isAvailable": vehicle.is_available,
-                "pricePerKm": float(vehicle.price_per_km),
-                "minimumCharge": float(vehicle.minimum_charge),
-                "driverAllowancePerDay": float(vehicle.driver_allowance_per_day),
-                "minimumDays": vehicle.minimum_days,
+                "seatingCapacity": vehicle.seatingCapacity,
+                "isAvailable": vehicle.isAvailable,
+                "pricePerKm": float(vehicle.pricePerKm),
+                "pricePerDay": float(vehicle.pricePerDay) if hasattr(vehicle, 'pricePerDay') and vehicle.pricePerDay else float(vehicle.pricePerKm) * 200,
+                "minimumCharge": float(vehicle.minimumCharge),
+                "driverAllowancePerDay": float(vehicle.driverAllowancePerDay),
+                "minimumDays": vehicle.minimumDays,
                 "make": vehicle.make,
                 "model": vehicle.model,
                 "year": vehicle.year,
-                "fuelType": vehicle.fuel_type,
+                "fuelType": vehicle.fuelType,
                 "color": vehicle.color,
                 "amenities": vehicle.amenities or [],
                 "images": vehicle.images or [],
-                "thumbnailImage": vehicle.thumbnail_image,
+                "thumbnailImage": vehicle.thumbnailImage,
                 "description": vehicle.description,
                 "rating": float(vehicle.rating) if vehicle.rating else 0,
-                "reviewCount": vehicle.review_count,
-                "createdAt": vehicle.created_at.isoformat() if vehicle.created_at else None,
-                "updatedAt": vehicle.updated_at.isoformat() if vehicle.updated_at else None,
+                "reviewCount": vehicle.reviewCount,
+                "createdAt": vehicle.createdAt.isoformat() if vehicle.createdAt else None,
+                "updatedAt": vehicle.updatedAt.isoformat() if vehicle.updatedAt else None,
             })
 
         return filtered
@@ -239,13 +240,14 @@ async def get_available_vehicles_endpoint(
         for vehicle in vehicles:
             result.append({
                 "id": vehicle.id,
-                "registrationNumber": vehicle.registration_number,
+                "registrationNumber": vehicle.registrationNumber,
                 "name": vehicle.name,
                 "type": vehicle.type.value,
-                "seatingCapacity": vehicle.seating_capacity,
-                "isAvailable": vehicle.is_available,
-                "pricePerKm": float(vehicle.price_per_km),
-                "minimumCharge": float(vehicle.minimum_charge),
+                "seatingCapacity": vehicle.seatingCapacity,
+                "isAvailable": vehicle.isAvailable,
+                "pricePerKm": float(vehicle.pricePerKm),
+                "pricePerDay": float(vehicle.pricePerDay) if hasattr(vehicle, 'pricePerDay') and vehicle.pricePerDay else float(vehicle.pricePerKm) * 200,
+                "minimumCharge": float(vehicle.minimumCharge),
                 "amenities": vehicle.amenities or [],
                 "rating": float(vehicle.rating) if vehicle.rating else 0,
             })
@@ -283,34 +285,35 @@ async def get_vehicle_endpoint(
 
         return {
             "id": vehicle.id,
-            "registrationNumber": vehicle.registration_number,
+            "registrationNumber": vehicle.registrationNumber,
             "name": vehicle.name,
             "type": vehicle.type.value,
-            "seatingCapacity": vehicle.seating_capacity,
-            "isAvailable": vehicle.is_available,
-            "pricePerKm": float(vehicle.price_per_km),
-            "minimumCharge": float(vehicle.minimum_charge),
-            "driverAllowancePerDay": float(vehicle.driver_allowance_per_day),
-            "minimumDays": vehicle.minimum_days,
+            "seatingCapacity": vehicle.seatingCapacity,
+            "isAvailable": vehicle.isAvailable,
+            "pricePerKm": float(vehicle.pricePerKm),
+            "pricePerDay": float(vehicle.pricePerDay) if hasattr(vehicle, 'pricePerDay') and vehicle.pricePerDay else float(vehicle.pricePerKm) * 200,
+            "minimumCharge": float(vehicle.minimumCharge),
+            "driverAllowancePerDay": float(vehicle.driverAllowancePerDay),
+            "minimumDays": vehicle.minimumDays,
             "make": vehicle.make,
             "model": vehicle.model,
             "year": vehicle.year,
-            "fuelType": vehicle.fuel_type,
+            "fuelType": vehicle.fuelType,
             "color": vehicle.color,
             "amenities": vehicle.amenities or [],
             "images": vehicle.images or [],
-            "thumbnailImage": vehicle.thumbnail_image,
+            "thumbnailImage": vehicle.thumbnailImage,
             "description": vehicle.description,
             "features": vehicle.features,  # JSON string
             "rating": float(vehicle.rating) if vehicle.rating else 0,
-            "reviewCount": vehicle.review_count,
-            "lastServiceDate": vehicle.last_service_date.isoformat() if vehicle.last_service_date else None,
-            "nextServiceDue": vehicle.next_service_due.isoformat() if vehicle.next_service_due else None,
-            "insuranceExpiry": vehicle.insurance_expiry.isoformat() if vehicle.insurance_expiry else None,
-            "pollutionCertExpiry": vehicle.pollution_cert_expiry.isoformat() if vehicle.pollution_cert_expiry else None,
-            "fitnessCertExpiry": vehicle.fitness_cert_expiry.isoformat() if vehicle.fitness_cert_expiry else None,
-            "createdAt": vehicle.created_at.isoformat() if vehicle.created_at else None,
-            "updatedAt": vehicle.updated_at.isoformat() if vehicle.updated_at else None,
+            "reviewCount": vehicle.reviewCount,
+            "lastServiceDate": vehicle.lastServiceDate.isoformat() if vehicle.lastServiceDate else None,
+            "nextServiceDue": vehicle.nextServiceDue.isoformat() if vehicle.nextServiceDue else None,
+            "insuranceExpiry": vehicle.insuranceExpiry.isoformat() if vehicle.insuranceExpiry else None,
+            "pollutionCertExpiry": vehicle.pollutionCertExpiry.isoformat() if vehicle.pollutionCertExpiry else None,
+            "fitnessCertExpiry": vehicle.fitnessCertExpiry.isoformat() if vehicle.fitnessCertExpiry else None,
+            "createdAt": vehicle.createdAt.isoformat() if vehicle.createdAt else None,
+            "updatedAt": vehicle.updatedAt.isoformat() if vehicle.updatedAt else None,
         }
 
     except HTTPException:

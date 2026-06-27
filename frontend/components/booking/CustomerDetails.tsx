@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, Mail, Phone, MapPin, FileText, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import type { CustomerInfo } from '@/types/booking'
 
@@ -50,52 +51,97 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({})
 
-  const validateField = (name: string, value: any) => {
+  // Reset form state when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData)
+      setErrors({})
+      setTouched({})
+    }
+  }, [initialData])
+
+  const validateField = (name: string, value: any, isBlur: boolean = false) => {
     const fieldErrors: { [key: string]: string } = {}
 
     switch (name) {
       case 'firstName':
       case 'lastName':
-        if (!value || value.trim().length < 2) {
+        // Only show error if value exists and is too short, or if blurring with empty/short value
+        const trimmed = value?.trim() || ''
+        if (trimmed.length > 0 && trimmed.length < 2) {
           fieldErrors[name] = `${name === 'firstName' ? 'First' : 'Last'} name must be at least 2 characters`
+        } else if (isBlur && trimmed.length < 2) {
+          fieldErrors[name] = `${name === 'firstName' ? 'First' : 'Last'} name is required`
         }
         break
       case 'email':
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!value || !emailRegex.test(value)) {
+        const trimmedEmail = value?.trim() || ''
+        // Only validate email if user has typed something substantial
+        // For "while typing" (not blur): only validate if they've typed @ and some more, and it's invalid
+        // For blur: validate if anything is typed and it's invalid
+        if (!isBlur && trimmedEmail.includes('@') && trimmedEmail.length > 5 && !emailRegex.test(trimmedEmail)) {
+          fieldErrors[name] = 'Please enter a valid email address'
+        } else if (isBlur && trimmedEmail.length > 0 && !emailRegex.test(trimmedEmail)) {
           fieldErrors[name] = 'Please enter a valid email address'
         }
         break
       case 'phone':
         const phoneRegex = /^[6-9]\d{9}$/
-        if (!value || !phoneRegex.test(value.replace(/\s/g, ''))) {
+        const cleanPhone = String(value || '').replace(/[^\d]/g, '')
+        // Only validate phone if user has entered at least some digits
+        if (cleanPhone.length > 0 && cleanPhone.length < 10 && !isBlur) {
+          // Don't show error while typing, unless it's clearly invalid (doesn't start with 6-9)
+          if (cleanPhone.length > 0 && !/^[6-9]/.test(cleanPhone)) {
+            fieldErrors[name] = 'Phone number must start with 6, 7, 8, or 9'
+          }
+        } else if (cleanPhone.length > 0 && !phoneRegex.test(cleanPhone)) {
           fieldErrors[name] = 'Please enter a valid 10-digit phone number'
+        } else if (isBlur && cleanPhone.length === 0) {
+          fieldErrors[name] = 'Phone number is required'
         }
         break
       case 'alternatePhone':
-        if (value && !/^[6-9]\d{9}$/.test(value.replace(/\s/g, ''))) {
+        const cleanAltPhone = String(value || '').replace(/[^\d]/g, '')
+        if (cleanAltPhone.length > 0 && cleanAltPhone.length < 10) {
+          // Only show error if they've started typing but it's incomplete
+          if (cleanAltPhone.length > 0 && !/^[6-9]/.test(cleanAltPhone)) {
+            fieldErrors[name] = 'Phone number must start with 6, 7, 8, or 9'
+          }
+        } else if (cleanAltPhone.length > 0 && !/^[6-9]\d{9}$/.test(cleanAltPhone)) {
           fieldErrors[name] = 'Please enter a valid 10-digit phone number'
         }
         break
       case 'address':
-        if (!value || value.trim().length < 10) {
+        const trimmedAddress = value?.trim() || ''
+        if (trimmedAddress.length > 0 && trimmedAddress.length < 10) {
           fieldErrors[name] = 'Address must be at least 10 characters'
+        } else if (isBlur && trimmedAddress.length < 10) {
+          fieldErrors[name] = 'Address is required (min 10 characters)'
         }
         break
       case 'city':
       case 'state':
-        if (!value || value.trim().length < 2) {
+        const trimmedValue = value?.trim() || ''
+        if (trimmedValue.length > 0 && trimmedValue.length < 2) {
+          fieldErrors[name] = `${name === 'city' ? 'City' : 'State'} must be at least 2 characters`
+        } else if (isBlur && trimmedValue.length < 2) {
           fieldErrors[name] = `${name === 'city' ? 'City' : 'State'} is required`
         }
         break
       case 'pincode':
-        const pincodeRegex = /^\d{6}$/
-        if (!value || !pincodeRegex.test(value)) {
+        const trimmedPincode = String(value || '').trim()
+        if (trimmedPincode.length > 0 && trimmedPincode.length < 6) {
+          // Don't show error while typing
+        } else if (trimmedPincode.length > 0 && !/^\d{6}$/.test(trimmedPincode)) {
           fieldErrors[name] = 'Please enter a valid 6-digit pincode'
+        } else if (isBlur && trimmedPincode.length === 0) {
+          fieldErrors[name] = 'Pincode is required'
         }
         break
       case 'acceptTerms':
-        if (!value) {
+        // Only show error on blur if not checked
+        if (isBlur && !value) {
           fieldErrors[name] = 'You must accept the terms and conditions'
         }
         break
@@ -108,21 +154,48 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
     setFormData(prev => ({ ...prev, [name]: value }))
     setTouched(prev => ({ ...prev, [name]: true }))
 
-    const fieldErrors = validateField(name, value)
-    setErrors(prev => ({ ...prev, ...fieldErrors }))
+    // Validate on change without blur flag (more lenient while typing)
+    const fieldErrors = validateField(name, value, false)
+
+    // Properly handle error clearing - remove error if field is now valid
+    setErrors(prev => {
+      const newErrors = { ...prev }
+      if (Object.keys(fieldErrors).length === 0) {
+        // No errors for this field, remove the error key
+        delete newErrors[name]
+      } else {
+        // Has errors, add/update them
+        newErrors[name] = fieldErrors[name]
+      }
+      return newErrors
+    })
   }
 
   const handleBlur = (name: keyof CustomerInfo) => {
     setTouched(prev => ({ ...prev, [name]: true }))
-    const fieldErrors = validateField(name, formData[name])
-    setErrors(prev => ({ ...prev, ...fieldErrors }))
+    // Validate with blur flag (stricter validation)
+    const fieldErrors = validateField(name, formData[name], true)
+
+    // Properly handle error clearing
+    setErrors(prev => {
+      const newErrors = { ...prev }
+      if (Object.keys(fieldErrors).length === 0) {
+        // No errors for this field, remove the error key
+        delete newErrors[name]
+      } else {
+        // Has errors, add/update them
+        newErrors[name] = fieldErrors[name]
+      }
+      return newErrors
+    })
   }
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {}
 
     Object.keys(formData).forEach(key => {
-      const fieldErrors = validateField(key, formData[key as keyof CustomerInfo])
+      // Use isBlur=true for strict validation on form submit
+      const fieldErrors = validateField(key, formData[key as keyof CustomerInfo], true)
       Object.assign(newErrors, fieldErrors)
     })
 
@@ -141,14 +214,29 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
   }
 
   const isFormValid = () => {
-    return formData.firstName.length >= 2 &&
-           formData.lastName.length >= 2 &&
-           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-           /^[6-9]\d{9}$/.test(formData.phone.replace(/\s/g, '')) &&
-           formData.address.length >= 10 &&
-           formData.city.length >= 2 &&
-           formData.state.length >= 2 &&
-           /^\d{6}$/.test(formData.pincode) &&
+    // Use trimmed values consistent with validateField
+    const firstName = formData.firstName.trim()
+    const lastName = formData.lastName.trim()
+    const email = formData.email.trim()
+    const phone = formData.phone.replace(/[^\d]/g, '')
+    const address = formData.address.trim()
+    const city = formData.city.trim()
+    const state = formData.state.trim()
+    const pincode = formData.pincode.trim()
+    const alternatePhone = formData.alternatePhone?.replace(/[^\d]/g, '') || ''
+
+    // Email is now optional - only validate if provided
+    const isEmailValid = email.length === 0 || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
+    return firstName.length >= 2 &&
+           lastName.length >= 2 &&
+           isEmailValid &&
+           /^[6-9]\d{9}$/.test(phone) &&
+           address.length >= 10 &&
+           city.length >= 2 &&
+           state.length >= 2 &&
+           /^\d{6}$/.test(pincode) &&
+           (!alternatePhone || /^[6-9]\d{9}$/.test(alternatePhone)) &&
            formData.acceptTerms
   }
 
@@ -178,6 +266,9 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
             <User className="h-5 w-5" />
             Personal Information
           </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Your phone number is used for booking confirmation and updates. No password required.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -219,7 +310,7 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              Email Address <span className="text-destructive">*</span>
+              Email Address <span className="text-muted-foreground">(Optional)</span>
             </Label>
             <Input
               id="email"
@@ -233,6 +324,7 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
             {errors.email && touched.email && (
               <p className="text-sm text-destructive">{errors.email}</p>
             )}
+            <p className="text-xs text-muted-foreground">Booking confirmation will be sent via SMS</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -322,21 +414,22 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
 
             <div className="space-y-2">
               <Label htmlFor="state">State <span className="text-destructive">*</span></Label>
-              <select
-                id="state"
+              <Select
                 value={formData.state}
-                onChange={(e) => handleChange('state', e.target.value)}
-                onBlur={() => handleBlur('state')}
-                className={cn(
-                  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-                  errors.state && touched.state && 'border-destructive'
-                )}
+                onValueChange={(value) => handleChange('state', value)}
               >
-                <option value="">Select state</option>
-                {INDIAN_STATES.map((state) => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
-              </select>
+                <SelectTrigger
+                  id="state"
+                  className={cn(errors.state && touched.state && 'border-destructive')}
+                >
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDIAN_STATES.map((state) => (
+                    <SelectItem key={state} value={state}>{state}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.state && touched.state && (
                 <p className="text-sm text-destructive">{errors.state}</p>
               )}
@@ -375,13 +468,16 @@ export function CustomerDetails({ onNext, onBack, passengerCount, initialData }:
             <Textarea
               id="specialRequests"
               value={formData.specialRequests}
-              onChange={(e) => handleChange('specialRequests', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.slice(0, 500)
+                handleChange('specialRequests', value)
+              }}
+              onBlur={() => handleBlur('specialRequests')}
               placeholder="Any special requests or additional information..."
               rows={3}
-              maxLength={500}
             />
             <p className="text-xs text-muted-foreground text-right">
-              {formData.specialRequests.length}/500
+              {formData.specialRequests?.length || 0}/500
             </p>
           </div>
         </CardContent>

@@ -81,7 +81,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
       >
         {/* Icon */}
         <div className="flex-shrink-0 mt-0.5">
-          {toastIcons[variant]}
+          {variant && toastIcons[variant]}
         </div>
 
         {/* Content */}

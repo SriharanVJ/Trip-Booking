@@ -29,7 +29,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  HeatMap
 } from 'recharts'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
@@ -65,17 +64,17 @@ const dailyRevenue = [
 ]
 
 const weeklyRevenue = [
-  { week: 'Week 1', revenue: 85000, bookings: 285 },
-  { week: 'Week 2', revenue: 92000, bookings: 310 },
-  { week: 'Week 3', revenue: 78000, bookings: 265 },
-  { week: 'Week 4', revenue: 105000, bookings: 355 },
+  { date: 'Week 1', revenue: 85000, bookings: 285 },
+  { date: 'Week 2', revenue: 92000, bookings: 310 },
+  { date: 'Week 3', revenue: 78000, bookings: 265 },
+  { date: 'Week 4', revenue: 105000, bookings: 355 },
 ]
 
 const monthlyRevenue = [
-  { month: 'Oct', revenue: 280000, bookings: 950 },
-  { month: 'Nov', revenue: 320000, bookings: 1080 },
-  { month: 'Dec', revenue: 450000, bookings: 1520 },
-  { month: 'Jan', revenue: 360000, bookings: 1215 },
+  { date: 'Oct', revenue: 280000, bookings: 950 },
+  { date: 'Nov', revenue: 320000, bookings: 1080 },
+  { date: 'Dec', revenue: 450000, bookings: 1520 },
+  { date: 'Jan', revenue: 360000, bookings: 1215 },
 ]
 
 const utilizationData = [
@@ -204,7 +203,7 @@ export function Reports() {
                       from: dateRange.from,
                       to: dateRange.to,
                     }}
-                    onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                    onSelect={(range: any) => setDateRange({ from: range?.from, to: range?.to })}
                     numberOfMonths={2}
                   />
                 </PopoverContent>
@@ -393,7 +392,7 @@ export function Reports() {
                   <div key={index} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {period === 'daily' ? item.date : period === 'weekly' ? item.week : item.month}
+                        {item.date}
                       </p>
                       {item.bookings && (
                         <p className="text-xs text-gray-500">{item.bookings} bookings</p>
@@ -500,7 +499,7 @@ export function Reports() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ route, percentage }) => `${route}: ${percentage}%`}
+                    label={(entry: any) => `${entry.route}: ${entry.percentage}%`}
                     outerRadius={120}
                     fill="#8884d8"
                     dataKey="bookings"

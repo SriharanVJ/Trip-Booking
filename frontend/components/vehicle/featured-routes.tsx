@@ -1,20 +1,53 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowDown, MapPin } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { routesApi } from '@/lib/api'
 
-const featuredRoutes = [
-  { id: '1', origin: 'Tirupur', destination: 'Ooty', from: 4999, image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a4?w=400' },
-  { id: '2', origin: 'Tirupur', destination: 'Kodaikanal', from: 5999, image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400' },
-  { id: '3', origin: 'Tirupur', destination: 'Rameshwaram', from: 9999, image: 'https://images.unsplash.com/photo-1580745269650-917dbaa28e74?w=400' },
-  { id: '4', origin: 'Tirupur', destination: 'Valparai', from: 5999, image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400' },
-]
+interface FeaturedRoute {
+  id: string
+  origin: string
+  destination: string
+  description?: string
+  from: number
+  image?: string | null
+  vehicleType?: string
+  seatingCapacity?: number
+}
 
 export function FeaturedRoutes() {
   const router = useRouter()
+  const [routes, setRoutes] = useState<FeaturedRoute[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleRouteClick = (route: typeof featuredRoutes[0]) => {
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        setLoading(true)
+        const response = await routesApi.getFeaturedRoutes()
+        setRoutes(response.data)
+      } catch (err) {
+        console.error('Failed to load featured routes:', err)
+        setError('Failed to load featured routes')
+        // Set default routes on error
+        setRoutes([
+          { id: '1', origin: 'Tirupur', destination: 'Ooty', from: 4999 },
+          { id: '2', origin: 'Tirupur', destination: 'Kodaikanal', from: 5999 },
+          { id: '3', origin: 'Tirupur', destination: 'Rameshwaram', from: 9999 },
+          { id: '4', origin: 'Tirupur', destination: 'Valparai', from: 5999 },
+        ])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRoutes()
+  }, [])
+
+  const handleRouteClick = (route: FeaturedRoute) => {
     const params = new URLSearchParams({
       origin: route.origin,
       destination: route.destination,
@@ -24,21 +57,51 @@ export function FeaturedRoutes() {
     router.push(`/search?${params.toString()}`)
   }
 
+  if (loading) {
+    return (
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-48 bg-gray-200 rounded-lg"></div>
+            <div className="p-4 space-y-2">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (error && routes.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p>Unable to load featured routes</p>
+      </div>
+    )
+  }
+
   return (
     <div>
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {featuredRoutes.map((route) => (
+        {routes.map((route) => (
           <Card
             key={route.id}
             className="group cursor-pointer overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
             onClick={() => handleRouteClick(route)}
           >
             <div className="relative h-48 overflow-hidden">
-              <img
-                src={route.image}
-                alt={route.destination}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+              {route.image ? (
+                <img
+                  src={route.image}
+                  alt={route.destination}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <MapPin className="h-16 w-16 text-white/30" />
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
               {/* Destination badge */}

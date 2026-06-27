@@ -32,244 +32,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import type { Vehicle, VehicleFilterParams } from '@/types'
-
-// Sample data - in real app, this would come from API
-const sampleVehicles: Vehicle[] = [
-  {
-    id: 'v1',
-    name: 'Toyota Innova Crysta',
-    type: 'car',
-    make: 'Toyota',
-    model: 'Innova Crysta',
-    year: 2023,
-    seatingCapacity: 7,
-    amenities: ['ac', 'wifi', 'charging-point', 'music-system', 'gps'],
-    imageUrl: '/images/vehicles/innova-crysta.jpg',
-    images: [
-      '/images/vehicles/innova-crysta.jpg',
-      '/images/vehicles/innova-crysta-2.jpg',
-      '/images/vehicles/innova-crysta-3.jpg',
-    ],
-    rating: 4.8,
-    reviewCount: 124,
-    basePrice: 18,
-    priceUnit: 'per-km',
-    minCharge: 250,
-    driverCharges: 500,
-    features: [
-      'Premium leather seats',
-      'Spacious luggage compartment',
-      'Professional and experienced driver',
-      '24/7 customer support',
-      'GPS tracking enabled',
-    ],
-    description:
-      'Experience luxury travel with the Toyota Innova Crysta. Perfect for family trips and business travel with premium comfort and safety features.',
-    specifications: {
-      engine: '2.8L Diesel',
-      fuelType: 'diesel',
-      transmission: 'automatic',
-      mileage: '11.4 kmpl',
-      luggageCapacity: '343L',
-    },
-    available: true,
-  },
-  {
-    id: 'v2',
-    name: 'Force Traveller 3350',
-    type: 'traveller',
-    make: 'Force',
-    model: 'Traveller 3350',
-    year: 2022,
-    seatingCapacity: 14,
-    amenities: ['ac', 'charging-point', 'pushback-seat', 'music-system'],
-    imageUrl: '/images/vehicles/traveller.jpg',
-    images: [
-      '/images/vehicles/traveller.jpg',
-      '/images/vehicles/traveller-2.jpg',
-    ],
-    rating: 4.5,
-    reviewCount: 89,
-    basePrice: 24,
-    priceUnit: 'per-km',
-    minCharge: 300,
-    driverCharges: 600,
-    features: [
-      'Pushback seats for comfort',
-      'Ample legroom',
-      'First aid kit included',
-      'Fire safety equipment',
-      'Experienced driver',
-    ],
-    description:
-      'Ideal for group travel, the Force Traveller offers comfortable seating for up to 14 passengers with AC and modern amenities.',
-    specifications: {
-      engine: '2.6L Diesel',
-      fuelType: 'diesel',
-      transmission: 'manual',
-      mileage: '9 kmpl',
-      luggageCapacity: '500L',
-    },
-    available: true,
-  },
-  {
-    id: 'v3',
-    name: 'Volvo 9400XL Coach',
-    type: 'coach',
-    make: 'Volvo',
-    model: '9400XL',
-    year: 2023,
-    seatingCapacity: 36,
-    amenities: [
-      'ac',
-      'wifi',
-      'charging-point',
-      'tv',
-      'toilet',
-      'water-bottle',
-      'blanket',
-      'meal',
-    ],
-    imageUrl: '/images/vehicles/volvo-coach.jpg',
-    images: [
-      '/images/vehicles/volvo-coach.jpg',
-      '/images/vehicles/volvo-coach-2.jpg',
-      '/images/vehicles/volvo-coach-3.jpg',
-    ],
-    rating: 4.9,
-    reviewCount: 256,
-    basePrice: 35,
-    priceUnit: 'per-km',
-    minCharge: 500,
-    driverCharges: 800,
-    features: [
-      'Luxury recliner seats',
-      'Individual entertainment screens',
-      'Onboard restrooms',
-      'Complimentary meals',
-      'WiFi connectivity',
-      'USB charging at every seat',
-    ],
-    description:
-      'Travel in luxury with the Volvo 9400XL. Features premium amenities including WiFi, entertainment systems, and onboard restrooms for long-distance comfort.',
-    specifications: {
-      engine: '11L Diesel',
-      fuelType: 'diesel',
-      transmission: 'automatic',
-      mileage: '4.5 kmpl',
-      length: '12m',
-      width: '2.6m',
-      height: '3.8m',
-      luggageCapacity: '2000L',
-    },
-    available: true,
-  },
-  {
-    id: 'v4',
-    name: 'Mercedes Benz Sprinter',
-    type: 'traveller',
-    make: 'Mercedes-Benz',
-    model: 'Sprinter',
-    year: 2023,
-    seatingCapacity: 9,
-    amenities: ['ac', 'wifi', 'charging-point', 'gps', 'rear-camera'],
-    imageUrl: '/images/vehicles/sprinter.jpg',
-    images: ['/images/vehicles/sprinter.jpg'],
-    rating: 4.7,
-    reviewCount: 67,
-    basePrice: 28,
-    priceUnit: 'per-km',
-    minCharge: 350,
-    driverCharges: 600,
-    features: [
-      'Premium interior finish',
-      'Advanced safety features',
-      'Climate control',
-      'Spacious interior',
-    ],
-    description:
-      'The Mercedes-Benz Sprinter combines luxury with functionality. Perfect for corporate travel and small groups.',
-    specifications: {
-      engine: '2.1L Diesel',
-      fuelType: 'diesel',
-      transmission: 'automatic',
-      mileage: '12 kmpl',
-      luggageCapacity: '400L',
-    },
-    available: true,
-  },
-  {
-    id: 'v5',
-    name: 'AC Seater Bus 52',
-    type: 'bus',
-    make: 'Tata',
-    model: 'AC Seater',
-    year: 2022,
-    seatingCapacity: 52,
-    amenities: ['ac', 'charging-point', 'pushback-seat'],
-    imageUrl: '/images/vehicles/ac-bus.jpg',
-    images: ['/images/vehicles/ac-bus.jpg'],
-    rating: 4.3,
-    reviewCount: 142,
-    basePrice: 42,
-    priceUnit: 'per-km',
-    minCharge: 800,
-    driverCharges: 1000,
-    features: [
-      'Large group capacity',
-      'Comfortable pushback seats',
-      'Individual AC vents',
-      'Ample luggage space',
-    ],
-    description:
-      'Perfect for large groups and tours. This 52-seater AC bus offers comfort and reliability for group travel.',
-    specifications: {
-      engine: '6L Diesel',
-      fuelType: 'diesel',
-      transmission: 'manual',
-      mileage: '5 kmpl',
-      length: '12m',
-      width: '2.4m',
-      height: '3.5m',
-      luggageCapacity: '3000L',
-    },
-    available: true,
-  },
-  {
-    id: 'v6',
-    name: 'Tempo Traveller 26',
-    type: 'traveller',
-    make: 'Force',
-    model: 'Tempo Traveller',
-    year: 2021,
-    seatingCapacity: 26,
-    amenities: ['ac', 'charging-point', 'pushback-seat', 'music-system'],
-    imageUrl: '/images/vehicles/tempo.jpg',
-    images: ['/images/vehicles/tempo.jpg'],
-    rating: 4.4,
-    reviewCount: 98,
-    basePrice: 26,
-    priceUnit: 'per-km',
-    minCharge: 400,
-    driverCharges: 700,
-    features: [
-      'Pushback seats',
-      'Music system',
-      'First aid kit',
-      'Fire extinguisher',
-    ],
-    description:
-      'Economical group travel solution. The Tempo Traveller 26 seater is perfect for medium-sized groups.',
-    specifications: {
-      engine: '2.6L Diesel',
-      fuelType: 'diesel',
-      transmission: 'manual',
-      mileage: '8 kmpl',
-      luggageCapacity: '800L',
-    },
-    available: true,
-  },
-]
+import { vehicleApi } from '@/lib/api'
 
 const ITEMS_PER_PAGE = 9
 
@@ -286,12 +49,85 @@ export default function VehiclesPage() {
   const [sortBy, setSortBy] = useState('featured')
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setVehicles(sampleVehicles)
-      setFilteredVehicles(sampleVehicles)
-      setLoading(false)
-    }, 1000)
+    // Load vehicles from API
+    const loadVehicles = async () => {
+      try {
+        setLoading(true)
+        const response = await vehicleApi.getVehicles()
+
+        // Transform amenities from backend format to frontend format
+        const transformAmenities = (apiAmenities: string[]) => {
+          const amenityMap: Record<string, string> = {
+            'AC': 'ac',
+            'WIFI': 'wifi',
+            'USB_CHARGING': 'charging-point',
+            'TV': 'tv',
+            'TOILET': 'toilet',
+            'WATER_BOTTLE': 'water-bottle',
+            'WATER_BOTTLES': 'water-bottle',
+            'BLANKET': 'blanket',
+            'BLANKETS': 'blanket',
+            'PILLOWS': 'blanket',
+            'MEAL': 'meal',
+            'SNACKS': 'meal',
+            'MUSIC_SYSTEM': 'music-system',
+            'FIRST_AID_KIT': 'first-aid-kit',
+            'FIRE_EXTINGUISHER': 'fire-extinguisher',
+            'GPS': 'gps',
+            'REAR_CAMERA': 'rear-camera',
+            'PUSHBACK_SEAT': 'pushback-seat',
+            'PUSHBACK_SEATS': 'pushback-seat',
+            'RECLINING_SEAT': 'reclining-seat',
+            'RECLINING_SEATS': 'reclining-seats',
+            'READING_LIGHTS': 'reading-light',
+            'READING_LIGHT': 'reading-light',
+            'LUGGAGE_SPACE': 'luggage-space',
+            'PASSENGER_DISPLAY': 'passenger-display',
+            'ENTERTAINMENT_SYSTEM': 'entertainment-system',
+            'MICROPHONE': 'microphone',
+            'REFRIGERATOR': 'refrigerator',
+          }
+          return apiAmenities.map(a => amenityMap[a] || a.toLowerCase().replace(/_/g, '-').replace(/ /g, '-'))
+        }
+
+        // Transform API response to match Vehicle type
+        const vehiclesData = response.data.map((v: any) => ({
+          id: v.id,
+          name: v.name,
+          type: v.type,
+          make: v.make,
+          model: v.model,
+          year: v.year,
+          seatingCapacity: v.seatingCapacity,
+          amenities: transformAmenities(v.amenities || []),
+          imageUrl: v.thumbnailImage || v.images?.[0] || '/images/placeholder-vehicle.jpg',
+          images: v.images || [],
+          rating: v.rating || 4.5,
+          reviewCount: v.reviewCount || 0,
+          basePrice: v.pricePerKm,
+          priceUnit: 'per-km',
+          minCharge: v.minimumCharge,
+          driverCharges: v.driverAllowancePerDay,
+          features: v.features?.features || [],
+          description: v.description || '',
+          specifications: v.specifications || {},
+          available: v.isAvailable !== false,
+          fuelType: v.fuelType || 'DIESEL',
+          pricePerDay: v.pricePerDay,
+        }))
+        setVehicles(vehiclesData)
+        setFilteredVehicles(vehiclesData)
+      } catch (error) {
+        console.error('Failed to load vehicles:', error)
+        // Set empty array on error
+        setVehicles([])
+        setFilteredVehicles([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadVehicles()
   }, [])
 
   useEffect(() => {
@@ -316,14 +152,6 @@ export default function VehiclesPage() {
 
     if (filters.vehicleTypes && filters.vehicleTypes.length > 0) {
       result = result.filter((v) => filters.vehicleTypes!.includes(v.type))
-    }
-
-    if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
-      result = result.filter((v) => {
-        if (filters.priceMin && v.basePrice < filters.priceMin) return false
-        if (filters.priceMax && v.basePrice > filters.priceMax) return false
-        return true
-      })
     }
 
     if (filters.amenities && filters.amenities.length > 0) {
@@ -371,8 +199,7 @@ export default function VehiclesPage() {
     (filters.seatingCapacity?.length || 0) +
     (filters.vehicleTypes?.length || 0) +
     (filters.amenities?.length || 0) +
-    (filters.location ? 1 : 0) +
-    (filters.priceMin !== undefined || filters.priceMax !== undefined ? 1 : 0)
+    (filters.location ? 1 : 0)
 
   return (
     <div className="min-h-screen bg-black">
@@ -574,7 +401,11 @@ export default function VehiclesPage() {
                         className="animate-fade-in-up-luxury"
                         style={{ animationDelay: `${index * 0.05}s` }}
                       >
-                        <VehicleCard vehicle={vehicle} variant={viewMode === 'grid' ? 'default' : 'compact'} />
+                        <VehicleCard
+                          vehicle={vehicle}
+                          variant={viewMode === 'grid' ? 'default' : 'compact'}
+                          priority={currentPage === 1 && index < 6} // Priority for first page, first 6 cards
+                        />
                       </div>
                     ))}
                   </div>
@@ -589,7 +420,7 @@ export default function VehiclesPage() {
                         No vehicles found
                       </h3>
                       <p className="text-warm-white-dark/60 mb-8 leading-relaxed">
-                        We couldn't find any vehicles matching your criteria. Try adjusting your filters or search query.
+                        We couldn&apos;t find any vehicles matching your criteria. Try adjusting your filters or search query.
                       </p>
                       <Button
                         className="bg-gradient-to-r from-gold to-gold-light text-black hover:from-gold-light hover:to-gold font-display font-semibold rounded-xl shadow-gold-lg shimmer-gold"
