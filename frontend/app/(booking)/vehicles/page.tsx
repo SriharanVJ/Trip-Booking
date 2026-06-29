@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search, MapPin, SlidersHorizontal, Grid3X3, List, Sparkles, Crown, Filter, ChevronDown } from 'lucide-react'
+import { Search, MapPin, Grid3X3, List, Sparkles, Crown } from 'lucide-react'
 import { VehicleCard, VehicleCardSkeleton } from '@/components/vehicle/VehicleCard'
-import { VehicleFilter } from '@/components/vehicle/VehicleFilter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -24,14 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import type { Vehicle, VehicleFilterParams } from '@/types'
+import type { Vehicle } from '@/types'
 import { vehicleApi } from '@/lib/api'
 
 const ITEMS_PER_PAGE = 9
@@ -42,8 +34,6 @@ export default function VehiclesPage() {
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const [filters, setFilters] = useState<VehicleFilterParams>({})
-  const [filterOpen, setFilterOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('featured')
@@ -143,23 +133,6 @@ export default function VehiclesPage() {
       )
     }
 
-    // Apply filters
-    if (filters.seatingCapacity && filters.seatingCapacity.length > 0) {
-      result = result.filter((v) =>
-        filters.seatingCapacity!.includes(v.seatingCapacity)
-      )
-    }
-
-    if (filters.vehicleTypes && filters.vehicleTypes.length > 0) {
-      result = result.filter((v) => filters.vehicleTypes!.includes(v.type))
-    }
-
-    if (filters.amenities && filters.amenities.length > 0) {
-      result = result.filter((v) =>
-        filters.amenities!.every((a) => v.amenities.includes(a))
-      )
-    }
-
     // Apply sorting
     switch (sortBy) {
       case 'price-low':
@@ -179,27 +152,17 @@ export default function VehiclesPage() {
 
     setFilteredVehicles(result)
     setCurrentPage(1)
-  }, [filters, searchQuery, vehicles, sortBy])
+  }, [searchQuery, vehicles, sortBy])
 
   const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
   const paginatedVehicles = filteredVehicles.slice(startIndex, endIndex)
 
-  const handleFilterChange = (newFilters: VehicleFilterParams) => {
-    setFilters(newFilters)
-  }
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-
-  const activeFilterCount =
-    (filters.seatingCapacity?.length || 0) +
-    (filters.vehicleTypes?.length || 0) +
-    (filters.amenities?.length || 0) +
-    (filters.location ? 1 : 0)
 
   return (
     <div className="min-h-screen bg-black">
@@ -269,48 +232,7 @@ export default function VehiclesPage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Filter Sidebar - Desktop */}
-          <div className="hidden lg:block w-80 flex-shrink-0 animate-fade-in-up-luxury">
-            <VehicleFilter
-              onFilterChange={handleFilterChange}
-              initialFilters={filters}
-            />
-          </div>
-
-          {/* Mobile Filter Sheet */}
-          <div className="lg:hidden fixed bottom-6 right-6 z-50">
-            <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  size="lg"
-                  className="h-16 w-16 rounded-full bg-gradient-to-r from-gold to-gold-light text-black shadow-gold-lg shimmer-gold hover:shadow-gold-xl transition-all"
-                >
-                  <Filter className="h-6 w-6" />
-                  {activeFilterCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-black text-gold border border-gold flex items-center justify-center p-0">
-                      {activeFilterCount}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:w-80 bg-black border-gold/20">
-                <SheetHeader>
-                  <SheetTitle className="text-gold font-display text-2xl">Filters</SheetTitle>
-                </SheetHeader>
-                <div className="mt-8">
-                  <VehicleFilter
-                    onFilterChange={handleFilterChange}
-                    initialFilters={filters}
-                    isOpen={filterOpen}
-                    onToggle={() => setFilterOpen(false)}
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Results Section */}
+        {/* Results Section */}
           <div className="flex-1">
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in-up-luxury" style={{ animationDelay: '0.1s' }}>
@@ -363,26 +285,6 @@ export default function VehiclesPage() {
               </div>
             </div>
 
-            {/* Active Filters Display */}
-            {activeFilterCount > 0 && (
-              <div className="flex flex-wrap items-center gap-3 mb-8 animate-fade-in-up-luxury" style={{ animationDelay: '0.15s' }}>
-                <span className="text-sm text-warm-white-dark/60">Active filters:</span>
-                <Badge className="bg-gold/20 text-gold border border-gold/30">
-                  {activeFilterCount} applied
-                </Badge>
-                <button
-                  onClick={() => {
-                    setFilters({})
-                    setSearchQuery('')
-                  }}
-                  className="text-sm text-gold hover:text-gold-light transition-colors flex items-center gap-1"
-                >
-                  Clear all
-                  <ChevronDown className="h-3 w-3 rotate-180" />
-                </button>
-              </div>
-            )}
-
             {/* Loading State */}
             {loading ? (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -420,16 +322,15 @@ export default function VehiclesPage() {
                         No vehicles found
                       </h3>
                       <p className="text-warm-white-dark/60 mb-8 leading-relaxed">
-                        We couldn&apos;t find any vehicles matching your criteria. Try adjusting your filters or search query.
+                        We couldn&apos;t find any vehicles matching your criteria. Try adjusting your search query.
                       </p>
                       <Button
                         className="bg-gradient-to-r from-gold to-gold-light text-black hover:from-gold-light hover:to-gold font-display font-semibold rounded-xl shadow-gold-lg shimmer-gold"
                         onClick={() => {
-                          setFilters({})
                           setSearchQuery('')
                         }}
                       >
-                        Clear All Filters
+                        Clear Search
                       </Button>
                     </div>
                   </div>

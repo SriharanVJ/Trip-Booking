@@ -113,7 +113,9 @@ async def get_vehicles(
     vehicle_type: Optional[VehicleType] = None,
     available_only: bool = True
 ) -> List[Vehicle]:
-    """Get vehicles with optional filters"""
+    """Get vehicles with optional filters, sorted by price per km ascending"""
+    from sqlalchemy import asc
+
     query = select(Vehicle)
 
     if available_only:
@@ -121,6 +123,9 @@ async def get_vehicles(
 
     if vehicle_type:
         query = query.where(Vehicle.type == vehicle_type)
+
+    # Sort by price per km in ascending order
+    query = query.order_by(asc(Vehicle.pricePerKm))
 
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)

@@ -7,16 +7,15 @@ const nextConfig = {
 
   // Optimize images
   images: {
-    domains: ['localhost', 'images.unsplash.com', 'raw.githubusercontent.com'],
+    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'raw.githubusercontent.com',
-        pathname: '/SriharanVJ/Trip-Booking/**',
+        hostname: '**',
       },
       {
-        protocol: 'https',
-        hostname: '**.githubusercontent.com',
+        protocol: 'http',
+        hostname: '**',
       },
     ],
     formats: ['image/avif', 'image/webp'],

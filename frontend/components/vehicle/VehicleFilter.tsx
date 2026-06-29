@@ -197,7 +197,7 @@ export function VehicleFilter({
                 <SlidersHorizontal className="h-5 w-5 text-gold" />
               </div>
               <h2 className="text-xl font-display font-bold text-warm-white">
-                Refine Selection
+                Filters
               </h2>
             </div>
           </div>

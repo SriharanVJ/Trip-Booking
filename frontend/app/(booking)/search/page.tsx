@@ -4,10 +4,8 @@ import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { MapPin, Calendar, Users, ArrowLeft } from 'lucide-react'
 import { VehicleCard, VehicleCardSkeleton } from '@/components/vehicle/VehicleCard'
-import { VehicleFilter } from '@/components/vehicle/VehicleFilter'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import type { Vehicle, VehicleFilterParams } from '@/types'
+import type { Vehicle } from '@/types'
 import { vehicleApi } from '@/lib/api'
 
 export default function SearchPage() {
@@ -16,7 +14,6 @@ export default function SearchPage() {
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeFilters, setActiveFilters] = useState<VehicleFilterParams>({})
 
   const origin = searchParams.get('origin') || ''
   const destination = searchParams.get('destination') || ''
@@ -113,27 +110,6 @@ export default function SearchPage() {
     loadVehicles()
   }, [])
 
-  const handleFilterChange = (filters: VehicleFilterParams) => {
-    setActiveFilters(filters)
-    let filtered = [...vehicles]
-
-    if (filters.vehicleTypes && filters.vehicleTypes.length > 0) {
-      filtered = filtered.filter(v => filters.vehicleTypes!.includes(v.type))
-    }
-
-    if (filters.seatingCapacity && filters.seatingCapacity.length > 0) {
-      filtered = filtered.filter(v => filters.seatingCapacity!.includes(v.seatingCapacity))
-    }
-
-    if (filters.amenities && filters.amenities.length > 0) {
-      filtered = filtered.filter(v =>
-        filters.amenities!.every(amenity => v.amenities.includes(amenity))
-      )
-    }
-
-    setFilteredVehicles(filtered)
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -170,53 +146,41 @@ export default function SearchPage() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          {/* Filters Sidebar */}
-          <div className="w-72 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-24">
-              <VehicleFilter onFilterChange={handleFilterChange} />
+        {/* Results */}
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {filteredVehicles.length} {filteredVehicles.length === 1 ? 'Vehicle' : 'Vehicles'} Available
+              </h1>
             </div>
           </div>
 
-          {/* Results */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {filteredVehicles.length} {filteredVehicles.length === 1 ? 'Vehicle' : 'Vehicles'} Available
-                </h1>
-              </div>
+          {loading ? (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <VehicleCardSkeleton key={i} />
+              ))}
             </div>
-
-            {loading ? (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <VehicleCardSkeleton key={i} />
-                ))}
+          ) : filteredVehicles.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-2xl border border-gray-200">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-10 w-10 text-gray-400" />
               </div>
-            ) : filteredVehicles.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-2xl border border-gray-200">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="h-10 w-10 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No vehicles found</h3>
-                <p className="text-gray-500 mb-6">Try adjusting your filters</p>
-                <Button variant="outline" onClick={() => { setActiveFilters({}); setFilteredVehicles(vehicles); }}>
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredVehicles.map((vehicle, index) => (
-                  <VehicleCard
-                    key={vehicle.id}
-                    vehicle={vehicle}
-                    priority={index < 6} // Priority for first 6 cards (above the fold)
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No vehicles found</h3>
+              <p className="text-gray-500 mb-6">No vehicles available for this route</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredVehicles.map((vehicle, index) => (
+                <VehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  priority={index < 6}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

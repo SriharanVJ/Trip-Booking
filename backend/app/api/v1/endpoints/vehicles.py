@@ -160,6 +160,9 @@ async def list_vehicles(
                 "updatedAt": vehicle.updatedAt.isoformat() if vehicle.updatedAt else None,
             })
 
+        # Sort by price per km in ascending order
+        filtered.sort(key=lambda x: x["pricePerKm"])
+
         return filtered
 
     except HTTPException:
