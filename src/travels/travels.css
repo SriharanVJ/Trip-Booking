@@ -1,0 +1,876 @@
+/*
+ * Book Travels stylesheet — ported from the Next.js app's globals.css +
+ * tailwind.config.ts, scoped for coexistence with the Acting Driver app.
+ *
+ * Everything that was a global token/element rule is nested under
+ * `.travels-root` (the wrapper rendered by src/routes/travels.tsx), and the
+ * stylesheet itself is only linked from the /travels layout route, so it
+ * never affects the landing page or the driver app.
+ *
+ * HSL triplet tokens from the original file are emitted as full hsl() values
+ * so that the `@theme inline` formulas here are byte-identical to the
+ * driver stylesheet's (both resolve `var(--background)` etc. per DOM scope).
+ */
+
+@import "tailwindcss" source(none);
+@source "./";
+
+@theme inline {
+  /* ── Semantic tokens (identical formulas to the driver stylesheet) ────── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Luxury Primary — Gold scale ──────────────────────────────────────── */
+  --color-primary-50: #fef9e7;
+  --color-primary-100: #fef3c7;
+  --color-primary-200: #fde68a;
+  --color-primary-300: #fcd34d;
+  --color-primary-400: #fbbf24;
+  --color-primary-500: #d4af37;
+  --color-primary-600: #c9a227;
+  --color-primary-700: #b38f1f;
+  --color-primary-800: #927617;
+  --color-primary-900: #786018;
+  --color-primary-950: #453810;
+
+  /* ── Luxury Secondary — Charcoal scale ────────────────────────────────── */
+  --color-secondary-50: #f5f5f5;
+  --color-secondary-100: #e5e5e5;
+  --color-secondary-200: #d4d4d4;
+  --color-secondary-300: #a3a3a3;
+  --color-secondary-400: #737373;
+  --color-secondary-500: #525252;
+  --color-secondary-600: #404040;
+  --color-secondary-700: #262626;
+  --color-secondary-800: #171717;
+  --color-secondary-900: #0a0a0a;
+  --color-secondary-950: #050505;
+
+  /* ── Rich Blacks ──────────────────────────────────────────────────────── */
+  --color-black: #0a0a0a;
+  --color-black-light: #1a1a1a;
+  --color-black-lighter: #2d2d2d;
+  --color-black-dark: #050505;
+
+  /* ── Elegant Gold ─────────────────────────────────────────────────────── */
+  --color-gold: #d4af37;
+  --color-gold-light: #f4c542;
+  --color-gold-lighter: #f7d968;
+  --color-gold-dark: #c9a227;
+  --color-gold-darker: #b38f1f;
+
+  /* ── Deep Charcoals ───────────────────────────────────────────────────── */
+  --color-charcoal: #2d2d2d;
+  --color-charcoal-light: #3d3d3d;
+  --color-charcoal-lighter: #4a4a4a;
+  --color-charcoal-dark: #1a1a1a;
+  --color-charcoal-darker: #0a0a0a;
+
+  /* ── Warm Whites ──────────────────────────────────────────────────────── */
+  --color-warm-white: #f5f5f5;
+  --color-warm-white-light: #fafafa;
+  --color-warm-white-dark: #a0a0a0;
+  --color-charcoal-dark-light: #2a2a2a;
+
+  /* ── Radius system ──────────────────────────────────────────────────────
+     lg/md/sm formulas are identical to the driver stylesheet's. */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-xs: calc(var(--radius) - 4px);
+  --radius-lg-sm: var(--radius-sm);
+  --radius-lg-lg: var(--radius-lg);
+  --radius-lg-xl: var(--radius-xl);
+  --radius-lg-2xl: var(--radius-2xl);
+
+  /* ── Luxury shadow system ───────────────────────────────────────────────
+     Values resolve per-scope against the --shadow-* custom properties on
+     .travels-root below. (shadow-luxury/-lg are hand-written classes.) */
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+  --shadow-premium: var(--shadow-premium);
+  --shadow-premium-lg: var(--shadow-premium-lg);
+  --shadow-gold: var(--shadow-gold);
+  --shadow-gold-lg: var(--shadow-gold-lg);
+  --shadow-glow-gold: 0 0 20px rgba(212, 175, 55, 0.3);
+  --shadow-glow-gold-lg: 0 0 40px rgba(212, 175, 55, 0.5);
+  --shadow-glow-gold-xl: 0 0 60px rgba(212, 175, 55, 0.6);
+
+  /* ── Fonts (Inter/Playfair are linked from the /travels layout route) ── */
+  --font-sans: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-playfair), var(--font-inter), system-ui, sans-serif;
+
+  /* ── Animations not already provided as hand-written classes ─────────── */
+  --animate-float-luxury: float-luxury 4s ease-in-out infinite;
+  --animate-pulse-soft-luxury: pulse-soft-luxury 3s ease-in-out infinite;
+  --animate-shimmer-gold: shimmer-gold 2.5s infinite linear;
+  --animate-spin-slow: spin-slow 8s linear infinite;
+
+  /* ── Gradient background images ───────────────────────────────────────── */
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+  --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+  --background-image-gradient-luxury-mesh:
+    radial-gradient(ellipse at 20% 30%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+  --background-image-gradient-gold: linear-gradient(135deg, #d4af37 0%, #f4c542 25%, #c9a227 50%, #d4af37 75%, #f4c542 100%);
+  --background-image-gradient-gold-subtle: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(244, 197, 66, 0.2) 50%, rgba(201, 162, 39, 0.3) 100%);
+  --background-image-gradient-luxury: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2d2d2d 100%);
+
+  /* Keyframes for the --animate-* utilities above */
+  @keyframes float-luxury {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes pulse-soft-luxury {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+  @keyframes shimmer-gold {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Token scope — the original :root / .light blocks, as full hsl() values.
+   ══════════════════════════════════════════════════════════════════════════ */
+.travels-root {
+  /* Luxury Premium Color Palette */
+  --background: hsl(220 20% 8%);
+  --foreground: hsl(40 10% 96%);
+
+  --card: hsl(220 15% 12%);
+  --card-foreground: hsl(40 10% 94%);
+
+  --popover: hsl(220 15% 12%);
+  --popover-foreground: hsl(40 10% 94%);
+
+  /* Primary - Elegant Gold */
+  --primary: hsl(45 85% 55%);
+  --primary-foreground: hsl(220 20% 8%);
+
+  /* Secondary - Deep Charcoal */
+  --secondary: hsl(220 15% 18%);
+  --secondary-foreground: hsl(40 10% 92%);
+
+  /* Accent - Refined Gold */
+  --accent: hsl(45 75% 50%);
+  --accent-foreground: hsl(220 20% 8%);
+
+  /* Muted - Subtle Charcoal */
+  --muted: hsl(220 12% 20%);
+  --muted-foreground: hsl(220 8% 65%);
+
+  /* Destructive - Premium Red */
+  --destructive: hsl(0 75% 50%);
+  --destructive-foreground: hsl(40 10% 96%);
+
+  /* Success - Elegant Green */
+  --success: hsl(145 70% 45%);
+  --success-foreground: hsl(40 10% 96%);
+
+  /* Warning - Refined Amber */
+  --warning: hsl(35 85% 50%);
+  --warning-foreground: hsl(220 20% 8%);
+
+  /* Info - Sophisticated Blue */
+  --info: hsl(210 75% 55%);
+  --info-foreground: hsl(40 10% 96%);
+
+  /* Borders & Inputs - Elegant Gold Tint */
+  --border: hsl(45 30% 20%);
+  --input: hsl(220 12% 18%);
+  --ring: hsl(45 85% 55%);
+
+  /* Premium Radius System */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+
+  /* Luxury Shadow System */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.7);
+  --shadow-2xl: 0 32px 96px rgba(0, 0, 0, 0.8);
+  --shadow-premium: 0 4px 24px rgba(212, 175, 55, 0.15);
+  --shadow-premium-lg: 0 8px 48px rgba(212, 175, 55, 0.25);
+  --shadow-gold: 0 0 24px rgba(212, 175, 55, 0.4);
+  --shadow-gold-lg: 0 0 48px rgba(212, 175, 55, 0.6);
+
+  /* Fonts (loaded via Google Fonts link in the /travels layout route) */
+  --font-inter: "Inter";
+  --font-playfair: "Playfair Display";
+
+  /* Original body styling (bg-black text-gray-50 antialiased) */
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  font-variation-settings: "opsz" 14;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.travels-root.light {
+  /* Light Luxury Mode */
+  --background: hsl(0 0% 98%);
+  --foreground: hsl(220 15% 12%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 15% 12%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 15% 12%);
+
+  --primary: hsl(45 75% 45%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(220 15% 94%);
+  --secondary-foreground: hsl(220 15% 12%);
+
+  --accent: hsl(45 70% 50%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  --muted: hsl(220 15% 92%);
+  --muted-foreground: hsl(220 10% 50%);
+
+  --border: hsl(220 20% 88%);
+  --input: hsl(220 20% 90%);
+  --ring: hsl(45 75% 45%);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Base element rules, scoped. (The original file applied these to html/body.)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Smooth scrolling only while a travels page is mounted */
+html:has(.travels-root) {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Luxury Typography */
+.travels-root h1,
+.travels-root h2,
+.travels-root h3,
+.travels-root h4,
+.travels-root h5,
+.travels-root h6 {
+  @apply font-display font-semibold tracking-tight;
+}
+
+.travels-root h1 {
+  @apply text-5xl md:text-6xl lg:text-7xl;
+}
+
+.travels-root h2 {
+  @apply text-4xl md:text-5xl;
+}
+
+.travels-root h3 {
+  @apply text-3xl md:text-4xl;
+}
+
+.travels-root h4 {
+  @apply text-2xl md:text-3xl;
+}
+
+/* Links */
+.travels-root a {
+  @apply transition-colors duration-300;
+}
+
+/* Select styling */
+.travels-root select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.travels-root select::-ms-expand {
+  display: none;
+}
+
+/* Luxury scrollbar — scoped to travels pages via :has() so the document
+   scrollbar is styled only while a travels page is mounted */
+html:has(.travels-root) ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html:has(.travels-root) ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+
+html:has(.travels-root) ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.5), rgba(201, 162, 39, 0.5));
+  border-radius: 5px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+}
+
+html:has(.travels-root) ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.7), rgba(201, 162, 39, 0.7));
+}
+
+/* Selection */
+.travels-root ::selection {
+  @apply bg-gold/20 text-gold;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .travels-root {
+    background-color: white !important;
+    color: black !important;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .travels-root {
+    --border: hsl(45 50% 30%);
+    --input: hsl(45 50% 30%);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Luxury utilities (verbatim from the original @layer utilities block —
+   these class names only exist in the travels app, no scoping needed).
+   ══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* Luxury Glassmorphism */
+  .glass-luxury {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/10;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-luxury-card {
+    @apply bg-black/30 backdrop-blur-xl border border-white/5;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .glass-gold {
+    @apply bg-gold/10 backdrop-blur-xl border border-gold/20;
+    box-shadow: 0 8px 32px rgba(212, 175, 55, 0.2), inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  }
+
+  /* Gold Gradient Backgrounds */
+  .gradient-gold {
+    background: linear-gradient(135deg, #d4af37 0%, #f4c542 25%, #c9a227 50%, #d4af37 75%, #f4c542 100%);
+  }
+
+  .gradient-gold-subtle {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(244, 197, 66, 0.2) 50%, rgba(201, 162, 39, 0.3) 100%);
+  }
+
+  .gradient-luxury {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2d2d2d 100%);
+  }
+
+  .gradient-luxury-mesh {
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 40% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+      linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+  }
+
+  /* Text Gradients */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #d4af37 0%, #f4c542 50%, #c9a227 100%);
+  }
+
+  .text-gradient-luxury {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #f5f5f5 0%, #d4af37 50%, #e5e5e5 100%);
+  }
+
+  /* Gold Shimmer Effect */
+  .shimmer-gold {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-gold::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+    animation: shimmer-gold 2.5s infinite;
+  }
+
+  @keyframes shimmer-gold {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* Border Styles */
+  .border-gold {
+    border: 1px solid rgba(212, 175, 55, 0.3);
+  }
+
+  .border-gold-thick {
+    border: 2px solid rgba(212, 175, 55, 0.4);
+  }
+
+  .border-gold-glow {
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3), inset 0 0 12px rgba(212, 175, 55, 0.1);
+  }
+
+  /* Luxury Card Hover */
+  .card-hover-luxury {
+    @apply transition-all duration-500 ease-out;
+    transition-property: transform, box-shadow, border-color;
+  }
+
+  .card-hover-luxury:hover {
+    @apply -translate-y-1;
+    box-shadow: 0 12px 48px rgba(212, 175, 55, 0.2), 0 0 24px rgba(212, 175, 55, 0.1);
+    border-color: rgba(212, 175, 55, 0.4);
+  }
+
+  /* Elegant Animations */
+  .animate-fade-in-luxury {
+    animation: fadeInLuxury 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-up-luxury {
+    animation: fadeInUpLuxury 0.7s ease-out forwards;
+  }
+
+  .animate-scale-in-luxury {
+    animation: scaleInLuxury 0.4s ease-out forwards;
+  }
+
+  .animate-slide-in-right-luxury {
+    animation: slideInRightLuxury 0.5s ease-out forwards;
+  }
+
+  .animate-slide-in-left-luxury {
+    animation: slideInLeftLuxury 0.5s ease-out forwards;
+  }
+
+  .animate-gold-pulse {
+    animation: goldPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes fadeInLuxury {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInUpLuxury {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleInLuxury {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slideInRightLuxury {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInLeftLuxury {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes goldPulse {
+    0%, 100% {
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 24px rgba(212, 175, 55, 0.5);
+    }
+  }
+
+  /* Particle Effect Container */
+  .particles-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .particles-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(212, 175, 55, 0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 70%, rgba(212, 175, 55, 0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 50%, rgba(212, 175, 55, 0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 10%, rgba(212, 175, 55, 0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 60%, rgba(212, 175, 55, 0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 33% 43%, rgba(212, 175, 55, 0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 23%, rgba(212, 175, 55, 0.3) 0%, transparent 100%);
+    background-size: 200% 200%;
+    background-position: 0% 0%;
+    animation: particlesFloat 20s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes particlesFloat {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 100% 100%;
+    }
+  }
+
+  /* Luxury Scrollbar */
+  .scrollbar-luxury {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.3) rgba(0, 0, 0, 0.2);
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.4), rgba(201, 162, 39, 0.4));
+    border-radius: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.6), rgba(201, 162, 39, 0.6));
+  }
+
+  /* Focus Styles */
+  .focus-ring-gold {
+    @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Interactive Elements */
+  .interactive-luxury {
+    @apply cursor-pointer transition-all duration-300;
+  }
+
+  .interactive-luxury:active {
+    transform: scale(0.98);
+  }
+
+  /* Status Colors - Luxury */
+  .status-available {
+    @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+  }
+
+  .status-booked {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+  }
+
+  .status-premium {
+    @apply bg-gold/20 text-gold border border-gold/30;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+  }
+
+  /* Loading States */
+  .loading-shimmer-gold {
+    background: linear-gradient(
+      90deg,
+      rgba(45, 45, 45, 0.3) 0%,
+      rgba(212, 175, 55, 0.15) 50%,
+      rgba(45, 45, 45, 0.3) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-gold 1.5s infinite;
+  }
+
+  /* Badge Variants */
+  .badge-gold {
+    @apply bg-gold/20 text-gold border border-gold/30 font-medium;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+  }
+
+  .badge-gold-solid {
+    @apply bg-gold text-black font-semibold;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+  }
+
+  /* Premium Shadows */
+  .shadow-luxury {
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      0 8px 32px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(212, 175, 55, 0.05);
+  }
+
+  .shadow-luxury-lg {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.4),
+      0 16px 64px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(212, 175, 55, 0.08);
+  }
+
+  /* Pattern Overlays - Luxury */
+  .pattern-luxury-grid {
+    background-image:
+      linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .pattern-luxury-dots {
+    background-image: radial-gradient(rgba(212, 175, 55, 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LUXURY DARK MODE — COMPREHENSIVE OVERRIDES (scoped to .travels-root).
+   Port of the original unscoped rules; every selector is nested so the
+   driver app and landing page are unaffected. Radix portal containers are
+   pointed at .travels-root by the travels UI kit (see components/ui/*).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Force dark background on all common elements */
+.travels-root * {
+  background-color: transparent !important;
+}
+
+.travels-root {
+  background-color: #0a0a0a !important;
+  color: #f5f5f5 !important;
+}
+
+/* Override all white backgrounds */
+.travels-root .bg-white,
+.travels-root [class*="bg-white"],
+.travels-root [data-state="open"][role="menu"],
+.travels-root [role="menuitem"],
+.travels-root [role="option"],
+.travels-root [role="listbox"],
+.travels-root [role="combobox"] {
+  background-color: #1a1a1a !important;
+  color: #f5f5f5 !important;
+}
+
+/* Radix UI Select/Popover/Dialog overrides */
+.travels-root [data-radix-select-content],
+.travels-root [data-radix-popover-content],
+.travels-root [data-radix-dropdown-menu-content] {
+  background-color: #1a1a1a !important;
+  color: #f5f5f5 !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Select items and menu items */
+.travels-root [data-radix-select-item]:hover,
+.travels-root [data-radix-dropdown-menu-item]:hover,
+.travels-root [role="menuitem"]:hover,
+.travels-root [role="option"]:hover {
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  color: #d4af37 !important;
+}
+
+/* Scrollable areas */
+.travels-root [role="listbox"],
+.travels-root [role="menu"],
+.travels-root select option {
+  background-color: #1a1a1a !important;
+  color: #f5f5f5 !important;
+}
+
+/* Fix any remaining light backgrounds */
+.travels-root .bg-gray-50,
+.travels-root .bg-gray-100,
+.travels-root .bg-slate-50,
+.travels-root .bg-slate-100,
+.travels-root .bg-neutral-50,
+.travels-root .bg-neutral-100 {
+  background-color: #1a1a1a !important;
+  color: #f5f5f5 !important;
+}
+
+/* Ensure inputs are dark */
+.travels-root input,
+.travels-root textarea,
+.travels-root select {
+  background-color: #1a1a1a !important;
+  color: #f5f5f5 !important;
+}
+
+.travels-root input::placeholder,
+.travels-root textarea::placeholder {
+  color: rgba(245, 245, 245, 0.4) !important;
+}
+
+/* Focus states */
+.travels-root input:focus,
+.travels-root textarea:focus,
+.travels-root select:focus,
+.travels-root button:focus {
+  outline-color: rgba(212, 175, 55, 0.5) !important;
+  outline-style: solid !important;
+  outline-width: 2px !important;
+}
+
+/* Autofill styling - keeps dark background */
+.travels-root input:-webkit-autofill,
+.travels-root input:-webkit-autofill:hover,
+.travels-root input:-webkit-autofill:focus,
+.travels-root input:-webkit-autofill:active,
+.travels-root textarea:-webkit-autofill,
+.travels-root textarea:-webkit-autofill:hover,
+.travels-root textarea:-webkit-autofill:focus,
+.travels-root textarea:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
+  -webkit-text-fill-color: #f5f5f5 !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #f5f5f5;
+}
+
+.travels-root input:-moz-autofill,
+.travels-root input:-moz-autofill:hover,
+.travels-root input:-moz-autofill:focus,
+.travels-root textarea:-moz-autofill,
+.travels-root textarea:-moz-autofill:hover,
+.travels-root textarea:-moz-autofill:focus {
+  box-shadow: 0 0 0 30px #1a1a1a inset !important;
+  -moz-text-fill-color: #f5f5f5 !important;
+  color: #f5f5f5 !important;
+}
+
+/* Ensure input text and caret colors are white in all states */
+.travels-root input,
+.travels-root textarea,
+.travels-root select {
+  caret-color: #f5f5f5 !important;
+}
+
+.travels-root input::selection,
+.travels-root textarea::selection {
+  background-color: rgba(212, 175, 55, 0.3) !important;
+  color: #f5f5f5 !important;
+}
+
+/* Checkbox dark mode styling */
+.travels-root [data-radix-checkbox][data-state="unchecked"] {
+  background-color: #1a1a1a !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+.travels-root [data-radix-checkbox][data-state="checked"] {
+  background-color: rgba(212, 175, 55, 0.9) !important;
+  border-color: #d4af37 !important;
+}
+
+.travels-root [data-radix-checkbox]:hover {
+  border-color: rgba(212, 175, 55, 0.6) !important;
+}
+
+.travels-root [data-radix-checkbox]:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+/* Button disabled state - make it more visible */
+.travels-root button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  background-color: #333 !important;
+  color: #888 !important;
+  border-color: #444 !important;
+}
+
+/* Ensure button text is visible in all states */
+.travels-root button:not(:disabled) {
+  color: inherit !important;
+}
