@@ -1,0 +1,13 @@
+node_modules
+dist
+.output
+legacy
+services/api/__pycache__
+services/api/**/__pycache__
+services/api/.venv
+services/api/uploads
+services/api/pytest.ini
+services/api/tests
+.env
+.env.*
+*.log

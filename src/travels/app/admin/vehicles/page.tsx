@@ -171,7 +171,7 @@ export default function AdminVehiclesPage() {
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="bg-black/50 border border-gold/20 rounded-lg px-3 py-2 text-sm text-warm-white focus:outline-hidden focus:border-gold/50"
+                  className="select-control w-36"
                 >
                   <option value="all">All Types</option>
                   <option value="car">Cars</option>

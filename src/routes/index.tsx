@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bus, CarTaxiFront } from "lucide-react";
 
-const apps = [
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+
+const services = [
   {
     to: "/travels",
     name: "Book Travels",
@@ -9,10 +12,6 @@ const apps = [
     description:
       "Browse coaches, vans, and cars with transparent pricing, live availability, and instant booking.",
     icon: Bus,
-    // Book Travels' own palette: black & gold luxury
-    card: "border-amber-200/10 bg-gradient-to-br from-neutral-900 via-neutral-900 to-[#141005] hover:border-amber-300/40",
-    iconWrap: "bg-gradient-to-br from-amber-300 to-yellow-600 text-black shadow-lg shadow-amber-500/20",
-    accent: "text-amber-300",
   },
   {
     to: "/driver",
@@ -21,59 +20,57 @@ const apps = [
     description:
       "Book a driver by location (A→B) or by the hour, track your trip in real time, and manage everything online.",
     icon: CarTaxiFront,
-    // Acting Driver's own palette: light, modern indigo
-    card: "border-slate-200 bg-white text-slate-900 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-100",
-    iconWrap: "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25",
-    accent: "text-indigo-600",
   },
 ];
 
 function Landing() {
   return (
-    <main className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
-        <span className="text-lg font-semibold tracking-tight">
-          Sri<span className="text-amber-300">Travels</span> &amp; Drive
-        </span>
-        <span className="text-sm text-neutral-400">One platform, two services</span>
-      </header>
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-6 pb-20">
-        <h1 className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
-          What would you like to book today?
-        </h1>
-        <p className="mt-4 max-w-xl text-neutral-400">
-          Choose a service to continue. You can switch between them anytime from the header.
-        </p>
+      <main className="flex flex-1 flex-col justify-center py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+              One platform, two services
+            </p>
+            <h1 className="mt-4 font-display text-4xl font-bold tracking-tight text-warm-white sm:text-5xl">
+              What would you like to book today?
+            </h1>
+            <p className="mt-4 text-muted-foreground">
+              Choose a service to continue. You can switch between them anytime from the header.
+            </p>
+          </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {apps.map((app) => (
-            <Link
-              key={app.to}
-              to={app.to}
-              className={`group flex flex-col rounded-2xl border p-8 transition-all hover:-translate-y-1 ${app.card}`}
-            >
-              <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${app.iconWrap}`}>
-                <app.icon className="h-7 w-7" />
-              </div>
-              <h2 className="mt-6 text-2xl font-semibold tracking-tight">{app.name}</h2>
-              <p className={`mt-1 text-sm font-medium ${app.accent}`}>{app.tagline}</p>
-              <p className="mt-4 flex-1 text-sm leading-relaxed text-neutral-500 group-hover:text-neutral-400">
-                {app.description}
-              </p>
-              <span className={`mt-8 inline-flex items-center gap-2 text-sm font-semibold ${app.accent}`}>
-                Continue
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </Link>
-          ))}
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {services.map((service) => (
+              <Link
+                key={service.to}
+                to={service.to}
+                className="glass-luxury-card group flex flex-col rounded-2xl border border-gold/20 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-gold/40"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-gold/30 bg-linear-to-br from-gold to-gold-dark shadow-gold">
+                  <service.icon className="h-7 w-7 text-black" />
+                </div>
+                <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight text-warm-white">
+                  {service.name}
+                </h2>
+                <p className="mt-1 text-sm font-medium text-gold">{service.tagline}</p>
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-warm-white-dark/70">
+                  {service.description}
+                </p>
+                <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-gold">
+                  Continue
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      </main>
 
-      <footer className="mx-auto w-full max-w-6xl px-6 pb-8 text-xs text-neutral-600">
-        Book Travels &amp; Acting Driver — unified platform
-      </footer>
-    </main>
+      <SiteFooter />
+    </div>
   );
 }
 

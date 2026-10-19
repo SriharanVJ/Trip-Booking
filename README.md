@@ -1,6 +1,18 @@
 # Unified Booking Platform — Book Travels + Book Acting Driver
 
-A single application hosting two products behind a shared landing page:
+A unified booking platform hosting two products behind one shared landing
+page: **Book Travels** — luxury fleet browsing, search, booking flow and an
+admin console in a gold/dark luxury theme — and **Book Acting Driver** —
+driver partner onboarding, live ride matching and driver + admin consoles.
+Both products keep their original identity and flows, entered from a single
+landing page at `/`.
+
+The platform is developed as a single FastAPI process that mounts both
+backend modules with per-module PostgreSQL databases, JWT/OTP authentication
+and WebSocket ride matching, paired with one TanStack Start frontend
+(React 19, Vite 8, Tailwind v4) whose route-scoped theming preserves each
+product's original look. Migrations, seeding and full-stack orchestration are
+automated via Docker Compose.
 
 | App | URL | What it does |
 |---|---|---|
@@ -9,6 +21,70 @@ A single application hosting two products behind a shared landing page:
 | **Book Acting Driver** | `/driver/*` | Driver partner onboarding, ride matching, driver + admin consoles (driver theme) |
 
 One frontend process (TanStack Start), one backend process (FastAPI), one `.env`.
+
+## Prerequisites
+
+- Node.js 20+
+- Python 3.12/3.13 with the deps in `services/api/requirements.txt`
+  (a ready virtualenv ships at `services/api/.venv`; a conda env `poc` also works)
+- PostgreSQL with two databases:
+  - `vehicle_booking` — travels
+  - `acting_driver` — driver
+  - see `DATABASE_URL` / `DRIVER_DATABASE_URL` in `.env.example`
+
+## Quickstart (Docker)
+
+Starts Postgres (both databases), the unified FastAPI service and the
+frontend dev server:
+
+```bash
+cp .env.example .env           # fill in SMTP creds + secrets (OTP delivery needs them)
+docker compose up --build -d
+docker compose logs -f api
+```
+
+- Frontend: http://localhost:8080
+- API: http://localhost:8000 (docs at `/docs`)
+
+Then seed once (travels vehicles + driver admin):
+
+```bash
+docker compose exec api alembic upgrade head
+docker compose exec api python seed_db.py
+docker compose exec api python -m driver_api.seed
+```
+
+Stop with `docker compose down` (add `-v` to drop the database volume).
+
+## Quickstart
+
+```bash
+# 1. Environment
+cp .env.example .env        # then fill in real values (SMTP creds, secrets)
+                            # .env is gitignored — never commit it
+
+# 2. Frontend deps
+npm install
+
+# 3. Backend virtualenv (if not using the bundled services/api/.venv)
+python3 -m venv services/api/.venv
+services/api/.venv/bin/pip install -r services/api/requirements.txt
+
+# 4. Databases (once each)
+cd services/api
+alembic upgrade head                          # driver schema (alembic.ini in services/api)
+.venv/bin/python seed_db.py                   # travels: vehicles + routes
+.venv/bin/python -m driver_api.seed           # driver: pricing config + admin user
+cd ../..
+# (travels tables auto-create on backend startup — schema-as-code)
+
+# 5. Run (two terminals)
+npm run dev:api     # FastAPI on :8000 (or: services/api/.venv/bin/python -m uvicorn main:app --app-dir services/api --reload --port 8000)
+npm run dev         # Vite dev server on :8080 — open http://localhost:8080
+```
+
+The driver admin login uses the seeded `ADMIN_PHONE` + OTP over SMTP.
+Travels admin (`/travels/admin/*`) uses the travels auth endpoints.
 
 ## Architecture
 
@@ -55,46 +131,6 @@ docs/
   driver/            archived driver docs (README, API, roadmap)
 legacy/              untouched copies of the two original repositories (archive)
 ```
-
-## Prerequisites
-
-- Node.js 20+
-- Python 3.12/3.13 with the deps in `services/api/requirements.txt`
-  (a ready virtualenv ships at `services/api/.venv`; a conda env `poc` also works)
-- PostgreSQL with two databases:
-  - `vehicle_booking` — travels
-  - `acting_driver` — driver
-  - see `DATABASE_URL` / `DRIVER_DATABASE_URL` in `.env.example`
-
-## Quickstart
-
-```bash
-# 1. Environment
-cp .env.example .env        # then fill in real values (SMTP creds, secrets)
-                            # .env is gitignored — never commit it
-
-# 2. Frontend deps
-npm install
-
-# 3. Backend virtualenv (if not using the bundled services/api/.venv)
-python3 -m venv services/api/.venv
-services/api/.venv/bin/pip install -r services/api/requirements.txt
-
-# 4. Databases (once each)
-cd services/api
-alembic upgrade head                          # driver schema (alembic.ini in services/api)
-.venv/bin/python seed_db.py                   # travels: vehicles + routes
-.venv/bin/python -m driver_api.seed           # driver: pricing config + admin user
-cd ../..
-# (travels tables auto-create on backend startup — schema-as-code)
-
-# 5. Run (two terminals)
-npm run dev:api     # FastAPI on :8000 (or: services/api/.venv/bin/python -m uvicorn main:app --app-dir services/api --reload --port 8000)
-npm run dev         # Vite dev server on :8080 — open http://localhost:8080
-```
-
-The driver admin login uses the seeded `ADMIN_PHONE` + OTP over SMTP.
-Travels admin (`/travels/admin/*`) uses the travels auth endpoints.
 
 ## Production build
 

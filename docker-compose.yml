@@ -1,0 +1,65 @@
+# Unified Booking Platform — postgres + FastAPI + TanStack Start frontend.
+#
+#   docker compose up --build -d      # start everything
+#   docker compose logs -f api        # follow API logs
+#   docker compose down               # stop
+#
+# Frontend:  http://localhost:8080
+# API:       http://localhost:8000  (docs at /docs)
+#
+# Secrets/config come from .env at the repo root (see .env.example). The
+# DATABASE_URL/DRIVER_DATABASE_URL entries below override the localhost
+# defaults so both backend modules reach the `db` service.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+      # Two databases: travels (vehicle_booking) + driver (acting_driver)
+      POSTGRES_DB: vehicle_booking
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Create the second database on first init.
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking -d vehicle_booking"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: ./services/api
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://booking:booking@db:5432/vehicle_booking
+      DRIVER_DATABASE_URL: postgresql+asyncpg://booking:booking@db:5432/acting_driver
+      REDIS_URL: ""
+      BACKEND_CORS_ORIGINS: http://localhost:8080
+      CORS_ORIGINS: http://localhost:8080
+      ENVIRONMENT: development
+      DEBUG: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: .
+    restart: unless-stopped
+    environment:
+      VITE_API_ORIGIN: http://localhost:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

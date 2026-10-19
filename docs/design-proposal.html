@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sri Gold × Midnight — Unified Design System Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   PROPOSED UNIFIED TOKENS — exactly what Stage 1 ships into styles.css
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Base / neutrals (warm) */
+  --background: oklch(0.975 0.008 95);
+  --foreground: oklch(0.25 0.035 250);
+  --card: oklch(0.995 0.004 95);
+  --muted: oklch(0.945 0.012 95);
+  --muted-foreground: oklch(0.5 0.03 250);
+  --border: oklch(0.895 0.015 95);
+  --input: oklch(0.86 0.02 95);
+
+  /* Primary action — deep navy */
+  --primary: oklch(0.38 0.09 255);
+  --primary-foreground: oklch(0.98 0.01 95);
+
+  /* Ink — dark surfaces (hero, footer, admin chrome, dark cards) */
+  --ink: oklch(0.21 0.035 255);
+  --ink-soft: oklch(0.28 0.04 255);
+  --ink-foreground: oklch(0.97 0.012 95);
+  --ink-muted: oklch(0.75 0.025 255);
+
+  /* Brand gold — the one accent (exact travels gold, kept) */
+  --gold: #d4af37;
+  --gold-strong: #b8942c;
+  --gold-deep: #92761d;      /* gold for TEXT on light backgrounds (contrast-safe) */
+  --gold-soft: rgba(212, 175, 55, 0.14);
+  --gold-foreground: #171204;
+
+  /* Status */
+  --success: oklch(0.58 0.13 155);
+  --warning: oklch(0.68 0.14 70);
+  --destructive: oklch(0.55 0.2 27);
+  --info: oklch(0.52 0.11 245);
+
+  /* Shape + shadow */
+  --radius: 0.75rem;
+  --radius-md: 10px; --radius-lg: 12px; --radius-xl: 16px; --radius-2xl: 20px;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 40, 0.06), 0 2px 8px rgba(20, 24, 40, 0.05);
+  --shadow-md: 0 4px 16px rgba(20, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(20, 24, 40, 0.12);
+
+  /* Type */
+  --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; border-color: var(--border); }
+body {
+  margin: 0; background: var(--background); color: var(--foreground);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3,h4 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+.section { max-width: 1080px; margin: 0 auto; padding: 56px 24px; }
+.section > h2 { font-size: 22px; margin-bottom: 4px; }
+.section > p.lede { color: var(--muted-foreground); margin: 0 0 28px; font-size: 14px; }
+.grid { display: grid; gap: 16px; }
+.note { font-size: 12.5px; color: var(--muted-foreground); margin-top: 10px; }
+code.tok { font-family: ui-monospace, monospace; font-size: 11.5px; background: var(--muted); padding: 1px 6px; border-radius: 6px; }
+
+/* ── Mock header ─────────────────────────────────────────────────── */
+.mock-header {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in oklch, var(--background) 92%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.mock-header .row {
+  max-width: 1080px; margin: 0 auto; padding: 0 24px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--gold), #f0cd5a);
+  color: var(--gold-foreground); font-family: var(--font-display); font-weight: 700; font-size: 17px;
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.35);
+}
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 16.5px; }
+.brand-name span { color: var(--gold-deep); }
+.main-nav { display: flex; gap: 4px; }
+.main-nav a {
+  text-decoration: none; color: var(--muted-foreground); font-size: 13.5px; font-weight: 600;
+  padding: 8px 12px; border-radius: 10px;
+}
+.main-nav a:hover { background: var(--muted); color: var(--foreground); }
+.main-nav a.active { background: var(--gold-soft); color: var(--gold-deep); }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600; line-height: 1;
+  border-radius: var(--radius-lg); border: 1px solid transparent; cursor: pointer;
+  height: 44px; padding: 0 20px; transition: all 160ms ease; text-decoration: none;
+}
+.btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: var(--primary-foreground); box-shadow: var(--shadow-sm); }
+.btn-primary:hover:not(:disabled) { background: oklch(0.33 0.09 255); }
+.btn-gold { background: var(--gold); color: var(--gold-foreground); box-shadow: 0 6px 18px rgba(212, 175, 55, 0.3); }
+.btn-gold:hover:not(:disabled) { background: var(--gold-strong); }
+.btn-gradient { background: linear-gradient(135deg, #d4af37, #f0cd5a 55%, #c9a227); color: var(--gold-foreground); box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35); }
+.btn-outline { background: var(--card); border-color: var(--input); color: var(--foreground); box-shadow: var(--shadow-sm); }
+.btn-outline:hover:not(:disabled) { background: var(--muted); }
+.btn-ghost { background: transparent; color: var(--foreground); }
+.btn-ghost:hover:not(:disabled) { background: var(--muted); }
+.btn-destructive { background: var(--destructive); color: #fff; }
+.btn-sm { height: 36px; padding: 0 14px; font-size: 13px; border-radius: 10px; }
+.btn-lg { height: 48px; padding: 0 26px; font-size: 15px; }
+.btn.on-ink { color: var(--ink-foreground); }
+.btn-ghost.on-ink:hover { background: rgba(255,255,255,0.08); }
+.btn-outline.on-ink { background: transparent; border-color: rgba(255,255,255,0.25); }
+.btn-outline.on-ink:hover { background: rgba(255,255,255,0.06); }
+
+/* ── Ink surfaces ────────────────────────────────────────────────── */
+.ink { background: var(--ink); color: var(--ink-foreground); border-radius: var(--radius-xl); }
+.hero {
+  border-radius: 0; padding: 72px 24px 64px; text-align: center;
+  background:
+    radial-gradient(ellipse 60% 80% at 20% 10%, rgba(212,175,55,0.13), transparent 60%),
+    radial-gradient(ellipse 50% 70% at 85% 90%, rgba(212,175,55,0.09), transparent 60%),
+    var(--ink);
+  color: var(--ink-foreground);
+}
+.hero .eyebrow { color: var(--gold); }
+.hero h1 { font-size: clamp(30px, 4.5vw, 46px); line-height: 1.12; margin: 12px auto 14px; max-width: 640px; }
+.hero p { color: var(--ink-muted); max-width: 480px; margin: 0 auto 28px; }
+.eyebrow {
+  display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gold-deep);
+}
+
+/* ── Service cards (landing pattern) ─────────────────────────────── */
+.choice {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl);
+  padding: 26px; display: flex; flex-direction: column; gap: 0;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.choice:hover { transform: translateY(-3px); border-color: rgba(212,175,55,0.55); box-shadow: var(--shadow-lg); }
+.icon-tile {
+  width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center;
+  background: var(--gold-soft); color: var(--gold-deep); font-size: 20px; margin-bottom: 18px;
+}
+.choice h3 { font-size: 19px; }
+.choice .tag { color: var(--gold-deep); font-size: 13.5px; font-weight: 600; margin-top: 3px; }
+.choice p.desc { color: var(--muted-foreground); font-size: 14px; margin: 12px 0 20px; flex: 1; }
+.choice .go { color: var(--gold-deep); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+/* ── Forms ───────────────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 6px; max-width: 340px; }
+.field label { font-size: 13.5px; font-weight: 600; }
+.field label .req { color: var(--gold-deep); margin-left: 2px; }
+.input, .select {
+  height: 44px; border-radius: var(--radius-lg); border: 1px solid var(--input);
+  background: var(--card); padding: 0 14px; font: inherit; font-size: 14px; color: var(--foreground);
+  transition: border-color 140ms ease, box-shadow 140ms ease; width: 100%;
+}
+.input::placeholder { color: oklch(0.65 0.02 250 / 0.75); }
+.input:focus, .select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.22); }
+.input.invalid { border-color: var(--destructive); }
+.input.invalid:focus { box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive) 20%, transparent); }
+.error-msg { display: flex; align-items: center; gap: 6px; color: var(--destructive); font-size: 12.5px; font-weight: 500; }
+.hint { color: var(--muted-foreground); font-size: 12.5px; }
+
+/* ── Cards / surfaces ────────────────────────────────────────────── */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm); padding: 22px;
+}
+.card-dark { background: var(--ink); color: var(--ink-foreground); border-color: transparent; box-shadow: var(--shadow-md); }
+.card-dark .sub { color: var(--ink-muted); }
+
+/* ── Badges / status ─────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 700;
+}
+.badge .dot { width: 6px; height: 6px; border-radius: 99px; background: currentColor; }
+.badge-gold { background: var(--gold-soft); color: var(--gold-deep); }
+.badge-blue { background: color-mix(in oklch, var(--info) 12%, transparent); color: var(--info); }
+.badge-green { background: color-mix(in oklch, var(--success) 13%, transparent); color: var(--success); }
+.badge-orange { background: color-mix(in oklch, var(--warning) 16%, transparent); color: oklch(0.5 0.12 60); }
+.badge-red { background: color-mix(in oklch, var(--destructive) 12%, transparent); color: var(--destructive); }
+
+/* ── Modal + toast + loading + empty ─────────────────────────────── */
+.modal-wrap { position: relative; min-height: 240px; border-radius: var(--radius-xl); background: var(--muted); overflow: hidden; padding: 20px; }
+.modal-backdrop { position: absolute; inset: 0; background: oklch(0.21 0.035 255 / 45%); display: grid; place-items: center; }
+.modal {
+  width: min(380px, 92%); background: var(--card); border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg); padding: 22px;
+}
+.modal h4 { font-size: 16px; margin-bottom: 6px; }
+.modal p { margin: 0 0 18px; font-size: 13.5px; color: var(--muted-foreground); }
+.modal .actions { display: flex; gap: 10px; justify-content: flex-end; }
+.toasts { display: flex; flex-direction: column; gap: 10px; }
+.toast {
+  display: flex; align-items: flex-start; gap: 10px; background: var(--card);
+  border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px;
+  box-shadow: var(--shadow-md); font-size: 13.5px; max-width: 360px;
+}
+.toast .ic { width: 20px; height: 20px; border-radius: 99px; display: grid; place-items: center; color: #fff; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+.toast strong { display: block; font-size: 13.5px; }
+.toast span { color: var(--muted-foreground); font-size: 12.5px; }
+.spinner {
+  width: 22px; height: 22px; border-radius: 99px;
+  border: 3px solid var(--gold-soft); border-top-color: var(--gold);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.skel { height: 14px; border-radius: 8px; background: linear-gradient(90deg, var(--muted) 25%, oklch(0.965 0.01 95) 50%, var(--muted) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.empty { text-align: center; padding: 44px 20px; }
+.empty .icon-tile { margin: 0 auto 14px; }
+.empty h4 { font-size: 16px; margin-bottom: 4px; }
+.empty p { color: var(--muted-foreground); font-size: 13.5px; margin: 0 0 16px; }
+
+/* ── Palette swatches ────────────────────────────────────────────── */
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; }
+.swatch { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--card); }
+.swatch .chip { height: 56px; }
+.swatch .meta { padding: 8px 10px; }
+.swatch .meta b { display: block; font-size: 12.5px; }
+.swatch .meta span { font-size: 11px; color: var(--muted-foreground); font-family: ui-monospace, monospace; }
+
+/* ── Type scale ──────────────────────────────────────────────────── */
+.type-row { display: flex; align-items: baseline; gap: 18px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+.type-row:last-child { border-bottom: 0; }
+.type-row .spec { width: 190px; flex-shrink: 0; font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--muted-foreground); }
+
+/* ── Table ───────────────────────────────────────────────────────── */
+table.data { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.data th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground); background: var(--muted); padding: 10px 14px; }
+table.data td { padding: 12px 14px; border-top: 1px solid var(--border); }
+.table-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-sm); }
+
+/* ── Mock footer ─────────────────────────────────────────────────── */
+footer.mock { background: var(--ink); color: var(--ink-muted); padding: 44px 24px 28px; }
+footer.mock .row { max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+footer.mock h5 { color: var(--ink-foreground); font-family: var(--font-display); margin: 0 0 10px; font-size: 14px; }
+footer.mock a { color: var(--ink-muted); text-decoration: none; display: block; font-size: 13px; padding: 3px 0; }
+footer.mock a:hover { color: var(--gold); }
+footer.mock .legal { max-width: 1080px; margin: 28px auto 0; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+.demo-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER MOCK ═══ -->
+<div class="mock-header"><div class="row">
+  <div class="brand">
+    <div class="brand-mark">S</div>
+    <div class="brand-name">Sri<span>Travels</span> &amp; Drive</div>
+  </div>
+  <nav class="main-nav">
+    <a href="#" class="active">Book Travels</a>
+    <a href="#">Acting Driver</a>
+    <a href="#">Valet Parking</a>
+  </nav>
+  <div class="header-actions">
+    <a href="#" class="btn btn-ghost btn-sm">Sign in</a>
+    <a href="#" class="btn btn-gold btn-sm">Get started</a>
+  </div>
+</div></div>
+
+<!-- ═══ HERO MOCK (dark ink band) ═══ -->
+<div class="hero">
+  <span class="eyebrow">One platform · three services</span>
+  <h1>What would you like to book today?</h1>
+  <p>Premium vehicles, personal drivers, and valet parking for your events — one account, one seamless experience.</p>
+  <a href="#" class="btn btn-gold btn-lg">Explore services</a>
+  <a href="#" class="btn btn-outline on-ink btn-lg" style="margin-left:8px">Sign in</a>
+</div>
+
+<!-- ═══ SERVICE CARDS ═══ -->
+<div class="section">
+  <h2>Landing cards — three services, one card language</h2>
+  <p class="lede">Services are differentiated by icon and copy, not by clashing palettes. "Valet Parking" slots in as the third card (arrives in Part 2).</p>
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+    <div class="choice">
+      <div class="icon-tile">🚌</div>
+      <h3>Book Travels</h3>
+      <div class="tag">Rent premium vehicles</div>
+      <p class="desc">Browse coaches, vans, and cars with transparent pricing, live availability, and instant booking.</p>
+      <span class="go">Continue →</span>
+    </div>
+    <div class="choice">
+      <div class="icon-tile">🧑‍✈️</div>
+      <h3>Book Acting Driver</h3>
+      <div class="tag">A trusted driver for your own car</div>
+      <p class="desc">Book a driver by location or by the hour, track your trip in real time, and manage everything online.</p>
+      <span class="go">Continue →</span>
+    </div>
+    <div class="choice">
+      <div class="icon-tile">🅿️</div>
+      <h3>Valet Parking</h3>
+      <div class="tag">Hassle-free parking for your events</div>
+      <p class="desc">Request professional valet drivers for weddings, mandapams, and corporate events. Our team confirms details with you.</p>
+      <span class="go">Continue →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PALETTE ═══ -->
+<div class="section">
+  <h2>1 · Palette — "Sri Gold × Midnight"</h2>
+  <p class="lede">Warm paper base · deep navy actions · one brand gold accent · ink surfaces for hero/footer/admin. The travels gold (<code class="tok">#d4af37</code>) is kept exactly — it carries the brand.</p>
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background: oklch(0.975 0.008 95); border-bottom:1px solid var(--border)"></div><div class="meta"><b>background</b><span>oklch(0.975 0.008 95)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.995 0.004 95); border-bottom:1px solid var(--border)"></div><div class="meta"><b>card</b><span>oklch(0.995 0.004 95)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.38 0.09 255)"></div><div class="meta"><b>primary (navy)</b><span>oklch(0.38 0.09 255)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: #d4af37"></div><div class="meta"><b>gold (brand)</b><span>#d4af37</span></div></div>
+    <div class="swatch"><div class="chip" style="background: #b8942c"></div><div class="meta"><b>gold-strong</b><span>#b8942c</span></div></div>
+    <div class="swatch"><div class="chip" style="background: #92761d"></div><div class="meta"><b>gold-deep (text)</b><span>#92761d</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.21 0.035 255)"></div><div class="meta"><b>ink (dark surface)</b><span>oklch(0.21 0.035 255)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.58 0.13 155)"></div><div class="meta"><b>success</b><span>oklch(0.58 0.13 155)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.68 0.14 70)"></div><div class="meta"><b>warning</b><span>oklch(0.68 0.14 70)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.55 0.2 27)"></div><div class="meta"><b>destructive</b><span>oklch(0.55 0.2 27)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.52 0.11 245)"></div><div class="meta"><b>info</b><span>oklch(0.52 0.11 245)</span></div></div>
+    <div class="swatch"><div class="chip" style="background: oklch(0.895 0.015 95)"></div><div class="meta"><b>border / muted</b><span>oklch(0.895 0.015 95)</span></div></div>
+  </div>
+  <p class="note"><b>Contrast rules:</b> white text on navy ✓ · near-black text on gold ✓ (≈8:1) · gold <i>text on light</i> uses <code class="tok">gold-deep #92761d</code>, never raw #d4af37 · gold text/icons on ink ✓.</p>
+</div>
+
+<!-- ═══ TYPOGRAPHY ═══ -->
+<div class="section">
+  <h2>2 · Typography — DM Sans (body) + Space Grotesk (display)</h2>
+  <p class="lede">Already the loaded pair at the app root. Playfair Display + Inter are dropped from travels; one Google Fonts request serves the whole platform.</p>
+  <div class="card">
+    <div class="type-row"><div class="spec">display-2xl · SG 700 · 44/50</div><div style="font-family:var(--font-display);font-weight:700;font-size:44px;line-height:1.14">Drive the moment</div></div>
+    <div class="type-row"><div class="spec">h1 · SG 600 · 30/38</div><div style="font-family:var(--font-display);font-weight:600;font-size:30px;line-height:1.26">Your fleet, ready to roll</div></div>
+    <div class="type-row"><div class="spec">h2 · SG 600 · 24/32</div><div style="font-family:var(--font-display);font-weight:600;font-size:24px;line-height:1.33">Recent bookings</div></div>
+    <div class="type-row"><div class="spec">h3 · SG 600 · 19/26</div><div style="font-family:var(--font-display);font-weight:600;font-size:19px;line-height:1.35">Toyota Urbania — 17 seats</div></div>
+    <div class="type-row"><div class="spec">body · DM Sans 400 · 15/24</div><div>Browse coaches, vans, and cars with transparent pricing, live availability, and instant booking.</div></div>
+    <div class="type-row"><div class="spec">label · DM Sans 600 · 13.5</div><div style="font-weight:600;font-size:13.5px">Mandapam / Venue Location <span style="color:var(--gold-deep)">*</span></div></div>
+    <div class="type-row"><div class="spec">eyebrow · 11 caps · 0.14em</div><div class="eyebrow">One platform · three services</div></div>
+    <div class="type-row"><div class="spec">reference · mono · 15</div><div style="font-family:ui-monospace,monospace;font-size:15px;letter-spacing:0.08em">VLT-8Q4K2M</div></div>
+  </div>
+</div>
+
+<!-- ═══ BUTTONS ═══ -->
+<div class="section">
+  <h2>3 · Buttons</h2>
+  <p class="lede">Travels' 12 gold variants collapse into 7. Navy = default action · Gold = brand CTA ("Book now", "Get started") · Gradient = hero moments only.</p>
+  <div class="card">
+    <div class="demo-nav">
+      <button class="btn btn-primary">Confirm booking</button>
+      <button class="btn btn-gold">Book now</button>
+      <button class="btn btn-gradient">Get started</button>
+      <button class="btn btn-outline">View details</button>
+      <button class="btn btn-ghost">Cancel</button>
+      <button class="btn btn-destructive">Cancel trip</button>
+      <button class="btn btn-primary" disabled>Disabled</button>
+    </div>
+    <div class="demo-nav">
+      <button class="btn btn-gold btn-sm">Small · 36px</button>
+      <button class="btn btn-gold">Default · 44px</button>
+      <button class="btn btn-gold btn-lg">Large · 48px</button>
+      <button class="btn btn-primary"><span class="spinner" style="width:16px;height:16px;border-width:2px;border-color:rgba(255,255,255,.35);border-top-color:#fff"></span> Processing…</button>
+    </div>
+    <div class="ink" style="padding:18px; display:flex; gap:10px; flex-wrap:wrap; margin-top:14px">
+      <button class="btn btn-gold btn-sm">Gold works on ink</button>
+      <button class="btn btn-outline on-ink btn-sm">Outline on ink</button>
+      <button class="btn btn-ghost on-ink btn-sm">Ghost on ink</button>
+    </div>
+    <p class="note">Radius 12px (<code class="tok">rounded-lg</code>) · heights 36/44/48 · focus ring 2px gold · travels' built-in <code class="tok">loading</code> spinner is kept and shared.</p>
+  </div>
+</div>
+
+<!-- ═══ FORMS ═══ -->
+<div class="section">
+  <h2>4 · Forms &amp; validation — one pattern everywhere</h2>
+  <p class="lede">Travels' floating-label Input is retired in favor of one top-label field (clearer, and consistent with the driver app's data density). Required fields carry a gold asterisk; errors are red 12.5px under the field; focus is always the gold ring.</p>
+  <div class="card" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px">
+    <div class="field">
+      <label>Mandapam / Venue Location<span class="req">*</span></label>
+      <input class="input" placeholder="e.g. Sri Kumaran Thirumana Mandapam, Tirupur">
+      <span class="hint">As it appears on the invitation</span>
+    </div>
+    <div class="field">
+      <label>Number of guests expected<span class="req">*</span></label>
+      <input class="input invalid" value="7500">
+      <span class="error-msg">● Must be between 1 and 5,000</span>
+    </div>
+    <div class="field">
+      <label>Customer phone<span class="req">*</span></label>
+      <input class="input" value="+91 98765 43210">
+    </div>
+    <div class="field">
+      <label>Event date &amp; time<span class="req">*</span></label>
+      <select class="select"><option>20 Sep 2026 · 06:00 PM</option></select>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CARDS / BADGES / TABLE ═══ -->
+<div class="section">
+  <h2>5 · Cards, badges, status &amp; tables</h2>
+  <p class="lede">One card style (light + dark "ink" variant), one status-badge system shared by all three services' booking lists.</p>
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); margin-bottom:16px">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="eyebrow">Booking reference</div><h3 style="font-size:18px;margin-top:6px;font-family:ui-monospace,monospace;letter-spacing:.06em">TRV-2024-00871</h3></div>
+        <span class="badge badge-green"><span class="dot"></span>Confirmed</span>
+      </div>
+      <p style="color:var(--muted-foreground);font-size:13.5px;margin:12px 0 0">Coimbatore → Ooty · 12 passengers · 20 Sep, 07:30 AM</p>
+    </div>
+    <div class="card card-dark">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="eyebrow" style="color:var(--gold)">Valet request</div><h3 style="font-size:18px;margin-top:6px;font-family:ui-monospace,monospace;letter-spacing:.06em">VLT-8Q4K2M</h3></div>
+        <span class="badge badge-gold">Pending review</span>
+      </div>
+      <p class="sub" style="font-size:13.5px;margin:12px 0 0">750 guests · 4 drivers · Grand Palace Mandapam</p>
+    </div>
+  </div>
+  <div class="table-card">
+    <table class="data">
+      <thead><tr><th>Reference</th><th>Venue</th><th>Event date</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td style="font-family:ui-monospace,monospace">VLT-8Q4K2M</td><td>Grand Palace Mandapam</td><td>28 Sep 2026</td><td><span class="badge badge-orange"><span class="dot"></span>Pending</span></td></tr>
+        <tr><td style="font-family:ui-monospace,monospace">VLT-3M9XQ1</td><td>Le Royale Convention Centre</td><td>02 Oct 2026</td><td><span class="badge badge-green"><span class="dot"></span>Confirmed</span></td></tr>
+        <tr><td style="font-family:ui-monospace,monospace">VLT-7P2KD5</td><td>Hotel Anaikatti Resorts</td><td>14 Sep 2026</td><td><span class="badge badge-blue"><span class="dot"></span>Completed</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Badges map to the four status tones (info/success/warning/destructive) — replaces travels' raw blue/green Tailwind colors (~250 hardcoded usages) and the driver's hand-written status classes alike.</p>
+</div>
+
+<!-- ═══ MODAL / TOAST / LOADING / EMPTY ═══ -->
+<div class="section">
+  <h2>6 · Modals, toasts, loading &amp; empty states</h2>
+  <p class="lede">Sonner becomes the single toast system (already a dependency — the driver app ships it but never uses it; travels has its own one-off). Radix Dialog loses the travels <code class="tok">!important</code> override war — one palette needs no overrides.</p>
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px,1fr))">
+    <div class="modal-wrap">
+      <div class="modal-backdrop"><div class="modal">
+        <h4>Cancel this booking?</h4>
+        <p>Your booking TRV-2024-00871 will be cancelled. A cancellation fee may apply as per policy.</p>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm">Keep booking</button>
+          <button class="btn btn-destructive btn-sm">Yes, cancel</button>
+        </div>
+      </div></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:16px">
+      <div class="toasts">
+        <div class="toast"><span class="ic" style="background:var(--success)">✓</span><div><strong>Valet request submitted</strong><span>Reference VLT-8Q4K2M — our team will contact you shortly.</span></div></div>
+        <div class="toast"><span class="ic" style="background:var(--destructive)">!</span><div><strong>Couldn't reach the server</strong><span>Check your connection and try again.</span></div></div>
+      </div>
+      <div class="card" style="display:flex; gap:18px; align-items:center">
+        <span class="spinner"></span>
+        <div style="flex:1"><div class="skel" style="width:55%"></div><div style="height:8px"></div><div class="skel" style="width:85%"></div></div>
+      </div>
+      <div class="card empty">
+        <div class="icon-tile">🗓️</div>
+        <h4>No valet requests yet</h4>
+        <p>When you request valet parking for an event, it will show up here.</p>
+        <button class="btn btn-gold btn-sm">Request valet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER MOCK ═══ -->
+<footer class="mock">
+  <div class="row">
+    <div style="max-width:300px">
+      <div class="brand" style="margin-bottom:12px"><div class="brand-mark">S</div><div class="brand-name" style="color:var(--ink-foreground)">Sri<span>Travels</span> &amp; Drive</div></div>
+      <p style="font-size:13px; margin:0">Premium vehicle rentals, personal drivers, and event valet parking across Tamil Nadu.</p>
+    </div>
+    <div><h5>Services</h5><a href="#">Book Travels</a><a href="#">Book Acting Driver</a><a href="#">Valet Parking</a></div>
+    <div><h5>Company</h5><a href="#">About</a><a href="#">Contact</a><a href="#">FAQ</a></div>
+    <div><h5>Contact</h5><a href="#">+91 98765 43210</a><a href="#">support@ajholidays.com</a><a href="#">Tirupur, Tamil Nadu</a></div>
+  </div>
+  <div class="legal"><span>© 2026 SriTravels &amp; Drive. All rights reserved.</span><span>Terms · Privacy · Refund Policy</span></div>
+</footer>
+
+</body>
+</html>
